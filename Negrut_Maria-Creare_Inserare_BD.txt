@@ -1,0 +1,1228 @@
+﻿--Negrut Maria-Daniela, grupa 133, Gestiunea unui centru medical
+CREATE TABLE "AFECTIUNI"
+(	"ID_AFECTIUNE" VARCHAR2(10 BYTE) NOT NULL ENABLE, 
+	"DENUMIRE_AFECTIUNE" VARCHAR2(50 BYTE) NOT NULL ENABLE, 
+	"ORGAN_AFECTAT" VARCHAR2(50 BYTE), 
+	"DESCRIERE" VARCHAR2(50 BYTE), 
+	"SEVERITATE" VARCHAR2(50 BYTE) NOT NULL ENABLE, 
+	 CONSTRAINT "AFECTIUNI_PK" PRIMARY KEY ("ID_AFECTIUNE"));
+
+CREATE TABLE "SLUJBE" 
+(	"ID_SLUJBA" VARCHAR2(5 BYTE) NOT NULL ENABLE, 
+	"NUME_SLUJBA" VARCHAR2(30 BYTE) NOT NULL ENABLE, 
+	"SALARIU_MINIM" NUMBER NOT NULL ENABLE, 
+	"BONUS_MAXIM" NUMBER, 
+	 CONSTRAINT "SLUJBE_PK" PRIMARY KEY ("ID_SLUJBA"));
+
+CREATE TABLE "SEDII" 
+(	"ID_SEDIU" NUMBER(5,0) NOT NULL ENABLE, 
+	"DENUMIRE_SEDIU" VARCHAR2(30 BYTE), 
+	"JUDET" VARCHAR2(20 BYTE) NOT NULL ENABLE, 
+	"LOCALITATE" VARCHAR2(20 BYTE) NOT NULL ENABLE, 
+	"ORAS" VARCHAR2(20 BYTE) NOT NULL ENABLE, 
+	"STRADA" VARCHAR2(20 BYTE) NOT NULL ENABLE, 
+	"NUMAR" NUMBER(5,0), 
+	 CONSTRAINT "SEDII_PK" PRIMARY KEY ("ID_SEDIU"));
+
+CREATE TABLE "CAMERE" 
+   (	"NR_CAMERA" NUMBER(3,0) NOT NULL ENABLE, 
+	"ID_SEDIU" NUMBER(5,0) NOT NULL ENABLE, 
+	"TIP" VARCHAR2(20 BYTE) NOT NULL ENABLE, 
+	 CONSTRAINT "CAMERE_PK" PRIMARY KEY ("NR_CAMERA", "ID_SEDIU"), 
+	 CONSTRAINT "CAMERE_FK_SEDIU" FOREIGN KEY ("ID_SEDIU")
+	  REFERENCES "SEDII" ("ID_SEDIU") ON DELETE CASCADE)
+
+ CREATE TABLE "APARATURI" 
+   (	"COD" NUMBER(10,0) NOT NULL ENABLE, 
+	"DENUMIRE" VARCHAR2(20 BYTE), 
+	"TIP" VARCHAR2(20 BYTE), 
+	"CAMERA_NR_CAMERA" NUMBER(3,0) NOT NULL ENABLE, 
+	"CAMERA_ID_SEDIU" NUMBER(5,0) NOT NULL ENABLE, 
+	 CONSTRAINT "APARATURI_PK" PRIMARY KEY ("COD"),
+	 CONSTRAINT "APARATURI_FK_CAMERA" FOREIGN KEY ("CAMERA_NR_CAMERA", "CAMERA_ID_SEDIU")
+	  REFERENCES"CAMERE" ("NR_CAMERA", "ID_SEDIU") ON DELETE CASCADE );
+
+
+CREATE TABLE "PACIENTI" 
+(	"ID_PACIENT" NUMBER(5,0) NOT NULL ENABLE, 
+	"NUME" VARCHAR2(20 BYTE) NOT NULL ENABLE, 
+	"PRENUME" VARCHAR2(30 BYTE) NOT NULL ENABLE, 
+	"CNP" NUMBER(10,0) NOT NULL ENABLE, 
+	"GEN" VARCHAR2(1 BYTE) NOT NULL ENABLE, 
+	"DATA_NASTERII" DATE NOT NULL ENABLE, 
+	"CID" NUMBER(10,0), 
+	 CONSTRAINT "PACIENTI_PK" PRIMARY KEY ("ID_PACIENT"));
+
+CREATE TABLE "TIPURI_ANALIZA"
+(	"ID_TIP_ANALIZA" NUMBER(10,0) NOT NULL ENABLE, 
+	"DENUMIRE_ANALIZA" VARCHAR2(50 BYTE) NOT NULL ENABLE, 
+	"TIP" VARCHAR2(50 BYTE), 
+	"VALOARE_MINIMA_REFERINTA" VARCHAR2(50 BYTE), 
+	"VALOARE_MAXIMA_REFERINTA" VARCHAR2(50 BYTE), 
+	 CONSTRAINT "TIPURI_ANALIZA_PK" PRIMARY KEY ("ID_TIP_ANALIZA"));
+
+CREATE TABLE "ISTORIC_AFECTIUNI" 
+(	"ID_PACIENT" NUMBER(5,0) NOT NULL ENABLE, 
+	"ID_AFECTIUNE" VARCHAR2(10 BYTE) NOT NULL ENABLE, 
+	"DATA_DEPISTARE" DATE NOT NULL ENABLE, 
+	"DATA_TRATARE" DATE, 
+    CONSTRAINT "ISTORIC_AFECTIUNI_PK" PRIMARY KEY ("ID_PACIENT", "ID_AFECTIUNE", "DATA_DEPISTARE"),
+    CONSTRAINT "ISTORIC_AFECTIUNI_FK_PACIENT" FOREIGN KEY ("ID_PACIENT") REFERENCES "PACIENTI" ("ID_PACIENT"), 
+    CONSTRAINT "IST_AFEC_FK_ID_AFECTIUNE" FOREIGN KEY ("ID_AFECTIUNE")REFERENCES "AFECTIUNI" ("ID_AFECTIUNE"));
+
+CREATE TABLE "DEPARTAMENTE" 
+   (	"ID_DEPARTAMENT" NUMBER(5,0) NOT NULL ENABLE, 
+	"NUME_DEPARTAMENT" VARCHAR2(30 BYTE) NOT NULL ENABLE, 
+	"ID_MANAGER" NUMBER(5,0), 
+	 CONSTRAINT "DEPARTAMENTE_PK" PRIMARY KEY ("ID_DEPARTAMENT"), 
+	 CONSTRAINT "DEPARTAMENTE_FK_MANAGER" FOREIGN KEY ("ID_MANAGER")
+	  REFERENCES "ANGAJATI" ("ID_ANGAJAT") ON DELETE SET NULL
+   );
+
+CREATE TABLE "MEDICAMENTE" 
+   (	"ID_MEDICAMENT" VARCHAR2(10 BYTE) NOT NULL ENABLE, 
+	"TIP" VARCHAR2(30 BYTE) NOT NULL ENABLE, 
+	"DENUMIRE" VARCHAR2(50 BYTE) NOT NULL ENABLE, 
+	"PRODUCATOR" VARCHAR2(50 BYTE) NOT NULL ENABLE, 
+	 CONSTRAINT "MEDICAMENTE_PK" PRIMARY KEY ("ID_MEDICAMENT")
+   );
+
+CREATE TABLE "TIPURI_OPERATIE" 
+   (	"ID_TIP_OPERATIE" NUMBER NOT NULL ENABLE, 
+	"DENUMIRE" VARCHAR2(50 BYTE) NOT NULL ENABLE, 
+	"RISC" VARCHAR2(30 BYTE), 
+	 CONSTRAINT "TIPURI_OPERATIE_PK" PRIMARY KEY ("ID_TIP_OPERATIE")
+   );
+
+
+CREATE TABLE "ANGAJATI" 
+   (	"ID_ANGAJAT" NUMBER(5,0) NOT NULL ENABLE, 
+	"NUME" VARCHAR2(20 BYTE) NOT NULL ENABLE, 
+	"PRENUME" VARCHAR2(30 BYTE) NOT NULL ENABLE, 
+	"CNP" NUMBER(10,0) NOT NULL ENABLE, 
+	"DATA_NASTERII" DATE NOT NULL ENABLE, 
+	"DATA_ANGAJARII" DATE NOT NULL ENABLE, 
+	"NR_TELEFON" NUMBER(10,0), 
+	"SALARIU" NUMBER NOT NULL ENABLE, 
+	"BONUS" NUMBER, 
+	"ID_SEF" NUMBER(5,0), 
+	"ID_DEPARTAMENT" NUMBER(5,0), 
+	"ID_SLUJBA" NUMBER(5,0), 
+	"ID_SEDIU" NUMBER(5,0), 
+	"ANGAJAT_TYPE" VARCHAR2(20 BYTE) NOT NULL ENABLE, 
+	"DOMENIU" VARCHAR2(20 BYTE), 
+	"CABINET_NR_CAMERA" NUMBER(5,0), 
+	"CABINET_ID_SEDIU" NUMBER(5,0), 
+	 CONSTRAINT "ANGAJATI_PK" PRIMARY KEY ("ID_ANGAJAT"), 
+	 CONSTRAINT "ANGAJATI_UK_NR_TEL" UNIQUE ("NR_TELEFON"), 
+	 CONSTRAINT "ANGAJATI_FK_SEF" FOREIGN KEY ("ID_SEF")
+	  REFERENCES ."ANGAJATI" ("ID_ANGAJAT"), 
+	 CONSTRAINT "PERS_MED_FK_CABINET" FOREIGN KEY ("CABINET_NR_CAMERA", "CABINET_ID_SEDIU")
+	  REFERENCES "CAMERE" ("NR_CAMERA", "ID_SEDIU"), 
+	 CONSTRAINT "ANGAJATI_FK_DEPT" FOREIGN KEY ("ID_DEPARTAMENT")
+	  REFERENCES "DEPARTAMENTE" ("ID_DEPARTAMENT"), 
+	 CONSTRAINT "ANGAJATI_FK_SEDIU" FOREIGN KEY ("ID_SEDIU")
+	  REFERENCES "SEDII" ("ID_SEDIU"));
+
+CREATE TABLE "CALIFICARI" 
+   (	"ID_ANGAJAT" NUMBER(5,0) NOT NULL ENABLE, 
+	"ID_CERTIFICARE" NUMBER(5,0) NOT NULL ENABLE, 
+	"DENUMIRE_CALIFICARE" VARCHAR2(30 BYTE) NOT NULL ENABLE, 
+	"DOMENIU_CALIFICARE" VARCHAR2(30 BYTE) NOT NULL ENABLE, 
+	"UNITATE_EMITENTA_CERTIFICARE" VARCHAR2(50 BYTE) NOT NULL ENABLE, 
+	 CONSTRAINT "CALIFICARI_PK" PRIMARY KEY ("ID_CERTIFICARE"), 
+	 CONSTRAINT "CALIFICARI_FK_ANGAJAT" FOREIGN KEY ("ID_ANGAJAT")
+	  REFERENCES "ANGAJATI" ("ID_ANGAJAT") ON DELETE CASCADE);
+
+CREATE TABLE "ISTORIC_SLUJBE" 
+   (	"ID_SLUJBA" VARCHAR2(5 BYTE) NOT NULL ENABLE, 
+	"ID_ANGAJAT" NUMBER(5,0) NOT NULL ENABLE, 
+	"DATA_INCEPUT" DATE NOT NULL ENABLE, 
+	"DATA_FINAL" DATE, 
+	"SALARIU_MAXIM" NUMBER, 
+	 CONSTRAINT "ISTORIC_SLUJBE_PK" PRIMARY KEY ("ID_SLUJBA", "ID_ANGAJAT", "DATA_INCEPUT"), 
+	 CONSTRAINT "ISTORIC_SLUJBE_FK_SLUJBA" FOREIGN KEY ("ID_SLUJBA")
+	  REFERENCES "SLUJBE" ("ID_SLUJBA"), 
+	 CONSTRAINT "ISTORIC_SLUJBE_FK_ANGAJAT" FOREIGN KEY ("ID_ANGAJAT")
+	  REFERENCES "ANGAJATI" ("ID_ANGAJAT"));
+
+
+ CREATE TABLE "PROGRAMARI" 
+   (	"ID_PROGRAMARE" NUMBER(5,0) NOT NULL ENABLE, 
+	"ID_RECEPTIONIST" NUMBER(5,0) NOT NULL ENABLE, 
+	"ID_PACIENT" NUMBER(5,0) NOT NULL ENABLE, 
+	"DATA" DATE, 
+	"TIP" VARCHAR2(10 BYTE) NOT NULL ENABLE, 
+	"STATUS" VARCHAR2(20 BYTE), 
+	 CONSTRAINT "PROGRAMARI_PK" PRIMARY KEY ("ID_PROGRAMARE", "ID_RECEPTIONIST", "ID_PACIENT"),
+	 CONSTRAINT "PROGRAMARI_FK_PAC" FOREIGN KEY ("ID_PACIENT")
+	  REFERENCES "PACIENTI" ("ID_PACIENT"), 
+	 CONSTRAINT "PROGRAMARI_FK_ANGAJ" FOREIGN KEY ("ID_RECEPTIONIST")
+	  REFERENCES "ANGAJATI" ("ID_ANGAJAT")  );
+
+CREATE TABLE "PROCEDURI_MEDICALE" 
+   (	"ID_RECEPTIONIST" NUMBER(5,0) NOT NULL ENABLE, 
+	"ID_PACIENT" NUMBER(5,0) NOT NULL ENABLE, 
+	"ID_PROGRAMARE" NUMBER(5,0) NOT NULL ENABLE, 
+	"ORA_INCEPERE_REALA" DATE NOT NULL ENABLE, 
+	"PROCEDURI_MEDICALE_TYPE" VARCHAR2(20 BYTE) NOT NULL ENABLE, 
+	"RECOLTARE_NR_PROBE" NUMBER(2,0), 
+	"CONSULT_MOTIV" VARCHAR2(30 BYTE), 
+	"OPERATIE_NR_CAMERA" NUMBER(3,0), 
+	"OPERATIE_ID_SEDIU" NUMBER(5,0), 
+	"OPERATIE_ID_TIP_OPERATIE" NUMBER(5,0), 
+	"OPERATIE_OBSERVATII" VARCHAR2(50 BYTE), 
+	 CONSTRAINT "PROCEDURI_MEDICALE_PK" PRIMARY KEY ("ID_RECEPTIONIST", "ID_PACIENT", "ID_PROGRAMARE", "ORA_INCEPERE_REALA"), 
+	 CONSTRAINT "PROCEDURI_MEDICALE_FK_PROGR" FOREIGN KEY ("ID_PROGRAMARE", "ID_RECEPTIONIST", "ID_PACIENT")
+	  REFERENCES "PROGRAMARI" ("ID_PROGRAMARE", "ID_RECEPTIONIST", "ID_PACIENT"), 
+	 CONSTRAINT "OPERATIE_FK_CAMERA" FOREIGN KEY ("OPERATIE_NR_CAMERA", "OPERATIE_ID_SEDIU")
+	  REFERENCES "CAMERE" ("NR_CAMERA", "ID_SEDIU"), 
+	 CONSTRAINT "OPERATIE_FK_TIP_OPERATIE" FOREIGN KEY ("OPERATIE_ID_TIP_OPERATIE")
+	  REFERENCES "TIPURI_OPERAȚIE" ("ID_TIP_OPERATIE"));
+
+ CREATE TABLE "PROBE" 
+   (	"ID_PROBA" NUMBER(5,0) NOT NULL ENABLE, 
+	"ID_RECEPTIONIST" NUMBER(5,0) NOT NULL ENABLE, 
+	"ID_PACIENT" NUMBER(5,0) NOT NULL ENABLE, 
+	"ID_PROGRAMARE" NUMBER(5,0) NOT NULL ENABLE, 
+	"ORA_INCEPERE_REALA" DATE NOT NULL ENABLE, 
+	"DATA_EXPIRARE" DATE, 
+	"TIP" VARCHAR2(20 BYTE) NOT NULL ENABLE, 
+	 CONSTRAINT "PROBE_PK" PRIMARY KEY ("ID_PROBA", "ID_RECEPTIONIST", "ID_PACIENT", "ID_PROGRAMARE", "ORA_INCEPERE_REALA"), 
+	 CONSTRAINT "PROBE_FK_PROCED" FOREIGN KEY ("ID_RECEPTIONIST", "ID_PACIENT", "ID_PROGRAMARE", "ORA_INCEPERE_REALA")
+	  REFERENCES "PROCEDURI_MEDICALE" ("ID_RECEPTIONIST", "ID_PACIENT", "ID_PROGRAMARE", "ORA_INCEPERE_REALA"));
+
+CREATE TABLE "PERSONAL_PROCEDURA" 
+   (	"ID_PERSONAL" NUMBER(5,0) NOT NULL ENABLE, 
+	"ROL" VARCHAR2(20 BYTE), 
+	"ID_PACIENT" NUMBER(5,0) NOT NULL ENABLE, 
+	"ID_RECEPTIONIST" NUMBER(5,0) NOT NULL ENABLE, 
+	"ID_PROGRAMARE" NUMBER(5,0) NOT NULL ENABLE, 
+	"ORA_INCEPERE_REALA" DATE NOT NULL ENABLE, 
+	 CONSTRAINT "PERSONAL_PROCEDURA_PK" PRIMARY KEY ("ID_PERSONAL", "ID_PACIENT", "ID_RECEPTIONIST", "ID_PROGRAMARE", "ORA_INCEPERE_REALA"), 
+	 CONSTRAINT "PERSONAL_PROCEDURA_FK_PROCED" FOREIGN KEY ("ID_RECEPTIONIST", "ID_PACIENT", "ID_PROGRAMARE", "ORA_INCEPERE_REALA")
+	  REFERENCES "PROCEDURI_MEDICALE" ("ID_RECEPTIONIST", "ID_PACIENT", "ID_PROGRAMARE", "ORA_INCEPERE_REALA"), 
+	 CONSTRAINT "PERSONAL_PROCEDURA_FK_ANGAJ" FOREIGN KEY ("ID_PERSONAL")
+	  REFERENCES "ANGAJATI" ("ID_ANGAJAT") );
+
+CREATE TABLE "INTERNARI" 
+   (	"ID_PACIENT" NUMBER NOT NULL ENABLE, 
+	"DATA_INCEPUT" DATE NOT NULL ENABLE, 
+	"DATA_SFARSIT" VARCHAR2(20 BYTE), 
+	"MOTIV" VARCHAR2(20 BYTE), 
+	"CAMERA_NR_CAMERA" NUMBER(3,0) NOT NULL ENABLE, 
+	"CAMERA_ID_SEDIU" NUMBER(5,0) NOT NULL ENABLE, 
+	 CONSTRAINT "INTERNARI_PK" PRIMARY KEY ("ID_PACIENT", "DATA_INCEPUT", "CAMERA_NR_CAMERA", "CAMERA_ID_SEDIU"), 
+	 CONSTRAINT "INTERNARI_FK_PACIENT" FOREIGN KEY ("ID_PACIENT")
+	  REFERENCES "PACIENTI" ("ID_PACIENT") ON DELETE CASCADE, 
+	 CONSTRAINT "INTERNARI_FK_CAMERA" FOREIGN KEY ("CAMERA_NR_CAMERA", "CAMERA_ID_SEDIU")
+	  REFERENCES "CAMERE" ("NR_CAMERA", "ID_SEDIU"));
+
+CREATE TABLE "DIAGNOSTICE" 
+   (	"OBSERVATII" VARCHAR2(20 BYTE), 
+	"ID_RECEPTIONIST" NUMBER(5,0) NOT NULL ENABLE, 
+	"ID_PACIENT" NUMBER(5,0) NOT NULL ENABLE, 
+	"ID_PROGRAMARE" NUMBER(5,0) NOT NULL ENABLE, 
+	"ORA_INCEPERE_REALA" DATE NOT NULL ENABLE, 
+	"ID_AFECTIUNE" VARCHAR2(20 BYTE) NOT NULL ENABLE, 
+	 CONSTRAINT "DIAGNOSTICE_PK" PRIMARY KEY ("ID_RECEPTIONIST", "ID_PACIENT", "ID_PROGRAMARE", "ORA_INCEPERE_REALA", "ID_AFECTIUNE"), 
+	 CONSTRAINT "DIAGNOSTICE_FK_PROCED" FOREIGN KEY ("ID_RECEPTIONIST", "ID_PACIENT", "ID_PROGRAMARE", "ORA_INCEPERE_REALA")
+	  REFERENCES "PROCEDURI_MEDICALE" ("ID_RECEPTIONIST", "ID_PACIENT", "ID_PROGRAMARE", "ORA_INCEPERE_REALA"), 
+	 CONSTRAINT "DIAGNOSTICE_FK_AFECTIUNE" FOREIGN KEY ("ID_AFECTIUNE")
+	  REFERENCES "AFECTIUNI" ("ID_AFECTIUNE"));
+
+CREATE TABLE "ANALIZE" 
+(	"ID_PROBA" NUMBER(5,0) NOT NULL ENABLE, 
+	"ID_TIP_ANALIZA" NUMBER(10,0) NOT NULL ENABLE, 
+	"ID_PROGRAMARE" NUMBER(5,0) NOT NULL ENABLE, 
+	"ID_PACIENT" NUMBER(5,0) NOT NULL ENABLE, 
+	"ID_RECEPTIONIST" NUMBER(5,0) NOT NULL ENABLE, 
+	"ORA_INCEPERE_REALA" DATE NOT NULL ENABLE, 
+	"ID_EXAMINATOR" NUMBER(5,0) NOT NULL ENABLE, 
+	"REZULTAT" VARCHAR2(20 BYTE), 
+	 CONSTRAINT "ANALIZE_PK" PRIMARY KEY ("ID_PROBA", "ID_TIP_ANALIZA", "ID_PROGRAMARE", "ID_PACIENT", "ID_RECEPTIONIST", "ORA_INCEPERE_REALA", "ID_EXAMINATOR"), 
+	 CONSTRAINT "ANALIZE_FK_PROBA" FOREIGN KEY ("ID_PROBA", "ID_RECEPTIONIST", "ID_PACIENT", "ID_PROGRAMARE", "ORA_INCEPERE_REALA")
+	  REFERENCES "PROBE" ("ID_PROBA", "ID_RECEPTIONIST", "ID_PACIENT", "ID_PROGRAMARE", "ORA_INCEPERE_REALA"), 
+	 CONSTRAINT "ANALIZE_FK_ANGAJAT" FOREIGN KEY ("ID_EXAMINATOR")
+	  REFERENCES "ANGAJATI" ("ID_ANGAJAT"), 
+	 CONSTRAINT "ANALIZE_FK_TIP_ANALIZA" FOREIGN KEY ("ID_TIP_ANALIZA")
+	  REFERENCES "TIPURI_ANALIZA" ("ID_TIP_ANALIZA"));
+
+CREATE TABLE "TRATAMENTE" 
+   (	"ID_MEDICAMENT" VARCHAR2(20 BYTE) NOT NULL ENABLE, 
+	"DATA_INCEPERE" VARCHAR2(20 BYTE) NOT NULL ENABLE, 
+	"DURATA" VARCHAR2(20 BYTE), 
+	"UNITATI_ZI" VARCHAR2(20 BYTE), 
+	"ID_PROGRAMARE" NUMBER(5,0) NOT NULL ENABLE, 
+	"ORA_INCEPERE_REALA" VARCHAR2(20 BYTE) NOT NULL ENABLE, 
+	"ID_AFECTIUNE" VARCHAR2(20 BYTE) NOT NULL ENABLE, 
+	"ID_RECEPTIONIST" NUMBER(5,0) NOT NULL ENABLE, 
+	"ID_PACIENT" NUMBER(5,0) NOT NULL ENABLE, 
+CONSTRAINT "TRATAMENTE_PK" PRIMARY KEY ("ID_MEDICAMENT", "DATA_INCEPERE", "ID_PROGRAMARE", "ORA_INCEPERE_REALA", "ID_AFECTIUNE", "ID_RECEPTIONIST", "ID_PACIENT"),
+CONSTRAINT "TRATAMENTE_FK_DIAG" FOREIGN KEY ("ID_RECEPTIONIST", "ID_PACIENT", "ID_PROGRAMARE", "ORA_INCEPERE_REALA", "ID_AFECTIUNE")
+	  REFERENCES "DIAGNOSTICE" ("ID_RECEPTIONIST", "ID_PACIENT", "ID_PROGRAMARE", "ORA_INCEPERE_REALA", "ID_AFECTIUNE") ENABLE, 
+	 CONSTRAINT "TRATAMENTE_FK_MEDIC" FOREIGN KEY ("ID_MEDICAMENT")
+	  REFERENCES "MEDICAMENTE" ("ID_MEDICAMENT"));
+
+CREATE TABLE "TRIMITERI" 
+   (	"ID_RECEPTIONIST" NUMBER(5,0) NOT NULL ENABLE, 
+	"ID_PACIENT" NUMBER(5,0) NOT NULL ENABLE, 
+	"ID_PROGRAMARE" NUMBER(5,0) NOT NULL ENABLE, 
+	"ORA_INCEPERE_REALA" DATE NOT NULL ENABLE, 
+	"ID_AFECTIUNE" VARCHAR2(20 BYTE) NOT NULL ENABLE, 
+	"SPECIALIZARE" VARCHAR2(30 BYTE) NOT NULL ENABLE, 
+	"COLUMN1" VARCHAR2(50 BYTE), 
+	 CONSTRAINT "TRIM_PK" PRIMARY KEY ("ID_RECEPTIONIST", "ID_PACIENT", "ID_PROGRAMARE", "ORA_INCEPERE_REALA", "ID_AFECTIUNE", "SPECIALIZARE")
+   );
+
+ CREATE TABLE "TRIMITERI" 
+   (	"ID_RECEPTIONIST" NUMBER(5,0) NOT NULL ENABLE, 
+	"ID_PACIENT" NUMBER(5,0) NOT NULL ENABLE, 
+	"ID_PROGRAMARE" NUMBER(5,0) NOT NULL ENABLE, 
+	"ORA_INCEPERE_REALA" VARCHAR2(20 BYTE) NOT NULL ENABLE, 
+	"ID_AFECTIUNE" VARCHAR2(20 BYTE) NOT NULL ENABLE, 
+	"SPECIALIZARE" VARCHAR2(30 BYTE) NOT NULL ENABLE, 
+	"MOTIV" VARCHAR2(50 BYTE), 
+	 CONSTRAINT "TRIM_PK" PRIMARY KEY ("ID_RECEPTIONIST", "ID_PACIENT", "ID_PROGRAMARE", "ORA_INCEPERE_REALA", "ID_AFECTIUNE", "SPECIALIZARE")
+	 CONSTRAINT "TRIMITERI_FK_DIAG" FOREIGN KEY ("ID_RECEPTIONIST", "ID_PACIENT", "ID_PROGRAMARE", "ORA_INCEPERE_REALA", "ID_AFECTIUNE")
+	  REFERENCES "DIAGNOSTICE" ("ID_RECEPTIONIST", "ID_PACIENT", "ID_PROGRAMARE", "ORA_INCEPERE_REALA", "ID_AFECTIUNE"));
+
+
+CREATE SEQUENCE  "SQ_ANG"  MINVALUE 1 MAXVALUE 99999 INCREMENT BY 1 START WITH 139 NOCACHE  NOORDER  NOCYCLE;
+
+CREATE SEQUENCE  "SQ_CAMERE"  MINVALUE 1 MAXVALUE 200 INCREMENT BY 3 START WITH 100 NOORDER  CYCLE ;
+
+CREATE SEQUENCE  "SQ_DEPT"  MINVALUE 1 MAXVALUE 99999 INCREMENT BY 3 START WITH 1 NOORDER  NOCYCLE ;
+
+CREATE SEQUENCE  "SQ_PROBE"  MINVALUE 1 MAXVALUE 500 INCREMENT BY 1 START WITH 100 NOORDER  NOCYCLE ;
+
+CREATE SEQUENCE  "SQ_PROG"  MINVALUE 1 MAXVALUE 99999 INCREMENT BY 1 START WITH 72 NOORDER  NOCYCLE ;
+
+CREATE SEQUENCE  "SQ_SEDII"  MINVALUE 1 MAXVALUE 99999 INCREMENT BY 1 START WITH 1 NOCACHE  NOORDER  NOCYCLE ;
+
+CREATE SEQUENCE  "SQ_TIP_OP"  MINVALUE 1 MAXVALUE 99999 INCREMENT BY 1 START WITH 1 NOORDER  NOCYCLE ;
+
+
+
+
+
+insert into SEDII (id_sediu, denumire_sediu, judet, localitate, oras, strada, numar) values (sq_sedii.nextval, 'Spital', 'Bucuresti', 'Bucuresti', 'Bucuresti', 'Unirii', 3);
+insert into SEDII (id_sediu, denumire_sediu, judet, localitate, oras, strada, numar) values (sq_sedii.nextval,  'Clinica Ana-Maria', 'Bucuresti', 'Bucuresti', 'Bucuresti', 'Curcubeu', 10);
+insert into SEDII (id_sediu, denumire_sediu, judet, localitate, oras, strada, numar) values (sq_sedii.nextval,  'Spital', 'Iasi', 'Iasi', 'Iasi', 'Progresului', 3);
+insert into SEDII (id_sediu, denumire_sediu, judet, localitate, oras, strada, numar) values (sq_sedii.nextval,  'Laborator', 'Bucuresti', 'Bucuresti', 'Bucuresti', 'Brutariei', 20);
+insert into SEDII (id_sediu, denumire_sediu, judet, localitate, oras, strada) values (sq_sedii.nextval,  'Spital', 'Timisoara', 'Timisoara', 'Timisoara', 'Frunzei');
+insert into SEDII (id_sediu, denumire_sediu, judet, localitate, oras, strada, numar) values (sq_sedii.nextval,  'Clinica Blue', 'Bucuresti', 'Bucuresti', 'Bucuresti', 'Copacului', 15);
+insert into SEDII (id_sediu, denumire_sediu, judet, localitate, oras, strada) values (sq_sedii.nextval,  'Clinica Sf. Nectarie', 'Bacau', 'Bacau', 'Bacau', 'Pacii');
+
+
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 1, 'Receptie');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 1, 'Sala de astepare');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 1, 'Cabinet');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 1, 'Cabinet');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 1, 'Cabinet');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 1, 'Sala operatii');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 1, 'Sala operatii');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 1, 'Sala operatii');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 1, 'Sala operatii');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 1, 'Salon internari');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 1, 'Salon internari');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 1, 'Salon internari');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 1, 'Salon internari');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 2, 'Receptie');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 2, 'Sala de astepare');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 2, 'Cabinet');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 2, 'Cabinet');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 2, 'Cabinet');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 2, 'Sala operatii');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 2, 'Sala operatii');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 2, 'Sala operatii');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 2, 'Sala operatii');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 2, 'Salon internari');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 6, 'Receptie');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 6, 'Sala de astepare');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 6, 'Cabinet');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 6, 'Cabinet');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 6, 'Cabinet');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 4, 'Receptie');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval,4, 'Laborator');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 4, 'Laborator');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 4, 'Stocare');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 5, 'Receptie');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval,5, 'Sala de astepare');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 5, 'Cabinet');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 5, 'Cabinet');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 5, 'Cabinet');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval,5, 'Sala operatii');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 5, 'Sala operatii');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 5, 'Sala operatii');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 5, 'Salon internari');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 3, 'Receptie');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 3, 'Sala de astepare');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 3, 'Cabinet');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 3, 'Cabinet');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 3, 'Cabinet');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval,3, 'Sala operatii');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 3, 'Sala operatii');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 3, 'Sala operatii');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 3, 'Salon internari');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 7, 'Receptie');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 7, 'Sala de astepare');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 7, 'Cabinet');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 7, 'Cabinet');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 7, 'Cabinet');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 7, 'Cabinet');
+insert into camere (nr_camera, id_sediu, tip)
+values (SQ_CAMERE.nextval, 7, 'Cabinet');
+
+Insert into AFECTIUNI (ID_AFECTIUNE,DENUMIRE_AFECTIUNE,ORGAN_AFECTAT,DESCRIERE,SEVERITATE) values (‘AMIG’, ‘Amigdalita’, ‘Amigdale’, null, ‘mica’);
+Insert into AFECTIUNI (ID_AFECTIUNE,DENUMIRE_AFECTIUNE,ORGAN_AFECTAT,DESCRIERE,SEVERITATE) values ('DIABI','Diabet insipid',null,null,'variat');
+Insert into AFECTIUNI (ID_AFECTIUNE,DENUMIRE_AFECTIUNE,ORGAN_AFECTAT,DESCRIERE,SEVERITATE) values ('ASTM','Astm bronsic','Sistemul respirator',null,'variat');
+Insert into AFECTIUNI (ID_AFECTIUNE,DENUMIRE_AFECTIUNE,ORGAN_AFECTAT,DESCRIERE,SEVERITATE) values ('RACI','Raceala','Sistemul respirator',null,'mica');
+Insert into AFECTIUNI (ID_AFECTIUNE,DENUMIRE_AFECTIUNE,ORGAN_AFECTAT,DESCRIERE,SEVERITATE) values ('GRIP','Gripa','Sistemul respirator',null,'medie-ridicata');
+Insert into AFECTIUNI (ID_AFECTIUNE,DENUMIRE_AFECTIUNE,ORGAN_AFECTAT,DESCRIERE,SEVERITATE) values ('COV','SARS-COV-2','Sistemul respirator','Usor transmisibil','medie-grav');
+Insert into AFECTIUNI (ID_AFECTIUNE,DENUMIRE_AFECTIUNE,ORGAN_AFECTAT,DESCRIERE,SEVERITATE) values ('DIABZ','Diabet zaharat',null,null,'variat');
+Insert into AFECTIUNI (ID_AFECTIUNE,DENUMIRE_AFECTIUNE,ORGAN_AFECTAT,DESCRIERE,SEVERITATE) values ('MIGR','Migrena','Cap',null,'mica');
+Insert into AFECTIUNI (ID_AFECTIUNE,DENUMIRE_AFECTIUNE,ORGAN_AFECTAT,DESCRIERE,SEVERITATE) values ('ATACC','Atac de cord','Inima',null,'grava');
+Insert into AFECTIUNI (ID_AFECTIUNE,DENUMIRE_AFECTIUNE,ORGAN_AFECTAT,DESCRIERE,SEVERITATE) values ('OSRPT','Os rupt','variaza',null,'variat');
+Insert into AFECTIUNI (ID_AFECTIUNE,DENUMIRE_AFECTIUNE,ORGAN_AFECTAT,DESCRIERE,SEVERITATE) values ('PTRRN','Pietre la rinichi','Rinichi',null,'ridicat-grav');
+Insert into AFECTIUNI (ID_AFECTIUNE,DENUMIRE_AFECTIUNE,ORGAN_AFECTAT,DESCRIERE,SEVERITATE) values ('GUTA','Guta','Articulatii','tip de artitra','moderat');
+
+insert into MEDICAMENTE (id_medicament, tip, denumire, producator) values (1077865, 'Comprimate', 'Paracetamol', 'Dr. Fresh, Inc');
+insert into MEDICAMENTE (id_medicament, tip, denumire, producator) values (20174841, 'Comprimate', 'Nurofen', 'AstraZeneca Pharmaceuticals LP');
+insert into MEDICAMENTE (id_medicament, tip, denumire, producator) values (89796871, 'Sirop', 'Rofedex', 'Nelco Laboratories, Inc');
+insert into MEDICAMENTE (id_medicament, tip, denumire, producator) values (13135565, 'Comprimate', 'Vicodin', 'Nelco Laboratories, Inc');
+insert into MEDICAMENTE (id_medicament, tip, denumire, producator) values (6536367, 'Comprimate', 'Amoxicillin', 'AstraZeneca Pharmaceuticals LP');
+insert into MEDICAMENTE (id_medicament, tip, denumire, producator) values ('3623', 'Comprimate', 'Metoclopramide', 'Cardinal Health');
+insert into MEDICAMENTE (id_medicament, tip, denumire, producator) values ('707', 'Comprimate', 'Vancomycin Hydrochloride', 'Watson Laboratories, Inc.');
+insert into MEDICAMENTE (id_medicament, tip, denumire, producator) values ('71688', 'Comprimate', 'Triflora', 'Natures Way Holding Co.');
+insert into MEDICAMENTE (id_medicament, tip, denumire, producator) values ('3234', 'Comprimate', 'Nix', 'Insight Pharmaceuticals');
+insert into MEDICAMENTE (id_medicament, tip, denumire, producator) values ('56', 'Sirop', 'Loratadine', 'STAT RX USA LLC');
+insert into MEDICAMENTE (id_medicament, tip, denumire, producator) values ('3222', 'Picaturi', 'Bicalutamide', 'UDL Laboratories, Inc.');
+
+insert into TIPURI_ANALIZA (id_tip_analiza, denumire_analiza, tip, valoare_minima_referinta, valoare_maxima_referinta)
+values (1, 'Hemoglobina', 'Hematologie', '13.1', '17.2');
+insert into TIPURI_ANALIZA (id_tip_analiza, denumire_analiza, tip, valoare_minima_referinta, valoare_maxima_referinta)
+values (2, 'Nr. trombocite', 'Hematologie', '150', '450');
+insert into TIPURI_ANALIZA (id_tip_analiza, denumire_analiza, tip, valoare_minima_referinta, valoare_maxima_referinta)
+values (3, 'Fibrinogen', 'Hemostaza', '200', '450');
+insert into TIPURI_ANALIZA (id_tip_analiza, denumire_analiza, tip, valoare_minima_referinta, valoare_maxima_referinta)
+values (4, 'Acid uric', 'Biochimie', '3.5', '7.2');
+insert into TIPURI_ANALIZA (id_tip_analiza, denumire_analiza, tip, valoare_minima_referinta, valoare_maxima_referinta)
+values (5, 'D-Dimeri', 'Imunologie', '500', NULL);
+insert into TIPURI_ANALIZA (id_tip_analiza, denumire_analiza, tip, valoare_minima_referinta, valoare_maxima_referinta)
+values (6, 'SARS-COV-2 IgG', 'SARS-COV-2', 1.400, NULL);
+insert into tipuri_analiza
+values (21, 'Glucoza', 'Biochimie', NULL, '50');
+insert into tipuri_analiza
+values (22, 'Proteine', 'Biochimie', NULL, '10');
+insert into tipuri_analiza
+values (23, 'Leucocite', 'Biochimie', NULL, '25');
+insert into tipuri_analiza
+values (24, 'VSH', 'Hematologie', NULL, '20');
+insert into tipuri_analiza
+values (25, 'Colesterol total', 'Biochimie', '120', '200');
+insert into tipuri_analiza
+values (26, 'HPV', 'Biologie moleculara', NULL, NULL);
+insert into tipuri_analiza
+values (27, 'Rotavirus', 'Parazitologie', NULL, NULL);
+insert into tipuri_analiza
+values (28, 'Adenovirus', 'Parazitologie', NULL, NULL);
+insert into tipuri_analiza
+values (29, 'Lactoferina', 'Parazitologie', NULL, NULL);
+insert into tipuri_analiza
+values (30, 'Raclat lingual', 'Parazitologie', NULL, NULL);
+
+insert into SLUJBE(id_slujba, nume_slujba, salariu_minim, bonus_maxim)
+values ('HRDIR', 'Director HR', 17665, 0.4);
+insert into SLUJBE(id_slujba, nume_slujba, salariu_minim, bonus_maxim)
+values ('PAZ', 'Paznic', 7665, 0.4);
+insert into SLUJBE(id_slujba, nume_slujba, salariu_minim, bonus_maxim)
+values ('PAZ', 'Paznic', 7665, 0.4);
+insert into SLUJBE(id_slujba, nume_slujba, salariu_minim, bonus_maxim)
+values ('POR', 'Portar', 7665, NULL);
+insert into SLUJBE(id_slujba, nume_slujba, salariu_minim, bonus_maxim)
+values ('CLE', 'Ingrijitor', 8005, NULL);
+insert into SLUJBE(id_slujba, nume_slujba, salariu_minim, bonus_maxim)
+values ('REC', 'Receptioner', 10005, 0.3);
+insert into SLUJBE(id_slujba, nume_slujba, salariu_minim, bonus_maxim)
+values ('ITM', 'Manager IT', 20000, 0.3);
+insert into SLUJBE(id_slujba, nume_slujba, salariu_minim, bonus_maxim)
+values ('DIRG', 'Director general', 200000, NULL);
+insert into SLUJBE(id_slujba, nume_slujba, salariu_minim, bonus_maxim)
+values ('DOS', 'Indosarieri', 8000, 0.3);
+insert into SLUJBE(id_slujba, nume_slujba, salariu_minim, bonus_maxim)
+values ('CC', 'Call center', 8000, 0.3);
+insert into SLUJBE(id_slujba, nume_slujba, salariu_minim, bonus_maxim)
+values ('ORT', 'Ortoped', 18000, 0.5);
+insert into SLUJBE(id_slujba, nume_slujba, salariu_minim, bonus_maxim)
+values ('DRS', 'Doctor specialist', 38000, NULL);
+insert into SLUJBE(id_slujba, nume_slujba, salariu_minim, bonus_maxim)
+values ('ANE', 'Anestezist', 28000, NULL);
+insert into SLUJBE(id_slujba, nume_slujba, salariu_minim, bonus_maxim)
+values ('CHR', 'Chirurg', 58000, NULL);
+insert into SLUJBE(id_slujba, nume_slujba, salariu_minim, bonus_maxim)
+values ('TEHM', 'Tehnician medical', 18000, NULL);
+insert into SLUJBE(id_slujba, nume_slujba, salariu_minim, bonus_maxim)
+values ('BLAB', 'Tehnician biochimist', 18000, NULL);
+insert into SLUJBE(id_slujba, nume_slujba, salariu_minim, bonus_maxim)
+values ('EXM', 'Examinator laborator', 18000, NULL);
+insert into SLUJBE(id_slujba, nume_slujba, salariu_minim, bonus_maxim)
+values ('DOCF', 'Doctor de familie', 30000, 0.3);
+insert into SLUJBE(id_slujba, nume_slujba, salariu_minim, bonus_maxim)
+values ('ASIS', 'Asistent', 14000, 0.3);
+
+insert into tipuri_operatie (id_tip_operatie, denumire, risc)
+values (SQ_TIP_OP.nextval, 'Nastere prin cezariana', 'scazut');
+insert into tipuri_operatie (id_tip_operatie, denumire, risc)
+values (SQ_TIP_OP.nextval, 'Apendicectomie', 'scazut');
+insert into tipuri_operatie (id_tip_operatie, denumire, risc)
+values (SQ_TIP_OP.nextval, 'Biopsie', 'scazut');
+insert into tipuri_operatie (id_tip_operatie, denumire, risc)
+values (SQ_TIP_OP.nextval, 'Extragere pietre la rinichi', 'scazut');
+insert into tipuri_operatie (id_tip_operatie, denumire, risc)
+values (SQ_TIP_OP.nextval, 'Transplant de rinichi', 'mediu-ridicat');
+insert into tipuri_operatie (id_tip_operatie, denumire, risc)
+values (SQ_TIP_OP.nextval, 'Osteotomie', 'variat');
+insert into tipuri_operatie (id_tip_operatie, denumire, risc)
+values (SQ_TIP_OP.nextval, 'Laminectomie', 'variat');
+insert into tipuri_operatie (id_tip_operatie, denumire, risc)
+values (SQ_TIP_OP.nextval, 'Nastere naturala', 'scazut');
+insert into tipuri_operatie (id_tip_operatie, denumire, risc)
+values (SQ_TIP_OP.nextval, 'Amigdalectomia', 'scazut');
+insert into tipuri_operatie (id_tip_operatie, denumire, risc)
+values (SQ_TIP_OP.nextval, 'Tiroidectomia', 'ridicat');
+
+insert into DEPARTAMENTE(id_departament, nume_departament, id_manager)
+values (SQ_DEPT.nextval, 'HR', 146);
+insert into DEPARTAMENTE(id_departament, nume_departament, id_manager)
+values (SQ_DEPT.nextval, 'Urgente', 166);
+insert into DEPARTAMENTE(id_departament, nume_departament, id_manager)
+values (SQ_DEPT.nextval, 'Securitate', 139);
+insert into DEPARTAMENTE(id_departament, nume_departament, id_manager)
+values (SQ_DEPT.nextval, 'Curatenie', NULL);
+insert into DEPARTAMENTE(id_departament, nume_departament, id_manager)
+values (SQ_DEPT.nextval, 'Administrare', NULL);
+insert into DEPARTAMENTE(id_departament, nume_departament, id_manager)
+values (SQ_DEPT.nextval, 'Receptie', 152);
+insert into DEPARTAMENTE(id_departament, nume_departament, id_manager)
+values (SQ_DEPT.nextval, 'Cercetare', NULL);
+insert into DEPARTAMENTE(id_departament, nume_departament, id_manager)
+values (SQ_DEPT.nextval, 'Ortopedie', NULL);
+insert into DEPARTAMENTE(id_departament, nume_departament, id_manager)
+values (SQ_DEPT.nextval, 'Oncologie', NULL);
+insert into DEPARTAMENTE(id_departament, nume_departament, id_manager)
+values (SQ_DEPT.nextval, 'Maternitate', NULL);
+insert into DEPARTAMENTE(id_departament, nume_departament, id_manager)
+values (SQ_DEPT.nextval, 'Medicina generala', 164);
+
+
+insert into angajati (id_angajat, nume, prenume, email, data_nasterii, data_angajarii, nr_telefon, id_slujba, id_sediu, CNP, salariu, bonus, angajat_type, id_departament, id_sef, domeniu, cabinet_nr_camera, cabinet_id_sediu)
+values (sq_ang.nextval, 'Jarnell', 'Michel', 'mjarnell0@opera.com', '18-Oct-1975','23-Oct-2018', '2315902359', 'POR', 1, '9264766553',7665,0.15,'Normal', 7, NULL, NULL, null, null);
+
+insert into angajati (id_angajat, nume, prenume, email, data_nasterii, data_angajarii, nr_telefon, id_slujba, id_sediu, CNP, salariu, bonus, angajat_type, id_departament, id_sef, domeniu, cabinet_nr_camera, cabinet_id_sediu)values (sq_ang.nextval, 'Batham', 'Thomasa', 'tbatham1@prweb.com', '01-Aug-1976', '02-Feb-2014', null, 'BLAB', 2, '3152616708', 20000, null, 'Normal', 19, 143, NULL, null, null);
+
+insert into angajati (id_angajat, nume, prenume, email, data_nasterii, data_angajarii, nr_telefon, id_slujba, id_sediu, CNP, salariu, bonus, angajat_type, id_departament, id_sef, domeniu, cabinet_nr_camera, cabinet_id_sediu)values (sq_ang.nextval, 'Joselevitch', 'Dore', 'djoselevitch2@examiner.com', '02-Jul-1973', '07-Sep-2010', '2298100397', 'ITM', 3, '8564355108', 20000, 0.79, 'Normal', 13, null, null, null, null);
+
+insert into angajati (id_angajat, nume, prenume, email, data_nasterii, data_angajarii, nr_telefon, id_slujba, id_sediu, CNP, salariu, bonus, angajat_type, id_departament, id_sef, domeniu, cabinet_nr_camera, cabinet_id_sediu)
+values (sq_ang.nextval, 'Barthel', 'Marwin', 'mbarthel3@disqus.com', '12-Apr-1973', '01-Aug-2015', '7045771294', 'ORT', 4, '0350279624', 22000,0.65, 'Personal_medical', 22, null, 'Ortopedie copii', 106, 1);
+
+insert into angajati (id_angajat, nume, prenume, email, data_nasterii, data_angajarii, nr_telefon, id_slujba, id_sediu, CNP, salariu, bonus, angajat_type, id_departament, id_sef, domeniu, cabinet_nr_camera, cabinet_id_sediu)values (sq_ang.nextval, 'Woolger', 'Peyter', 'pwoolger4@cisco.com', '09-Aug-1967', '10-Jan-2012', '1459760377', 'EXM', 5, '0628313829', 18000, 0.55, 'Personal_medical', 19, null, 'Hematologie', null, null);
+
+insert into angajati (id_angajat, nume, prenume, email, data_nasterii, data_angajarii, nr_telefon, id_slujba, id_sediu, CNP, salariu, bonus, angajat_type, id_departament, id_sef, domeniu, cabinet_nr_camera, cabinet_id_sediu)values (sq_ang.nextval, 'Cullnean', 'Zelma', 'zcullnean5@xinhuanet.com', '08-Aug-1998', '03-Jul-2017', null, 'REC', 6, '7414218848',12000, null, 'Normal',16, null, null, null, null);
+
+insert into angajati (id_angajat, nume, prenume, email, data_nasterii, data_angajarii, nr_telefon, id_slujba, id_sediu, CNP, salariu, bonus, angajat_type, id_departament, id_sef, domeniu, cabinet_nr_camera, cabinet_id_sediu)values (sq_ang.nextval, 'Lunney', 'Emili', 'elunney6@abc.net.au', '21-Jul-1998', '01-Oct-2014', '2695108880', 'REC', 7, '9105026091', 12000,0.74,'Normal', 16,152, null, null, null);
+
+insert into angajati (id_angajat, nume, prenume, email, data_nasterii, data_angajarii, nr_telefon, id_slujba, id_sediu, CNP, salariu, bonus, angajat_type, id_departament, id_sef, domeniu, cabinet_nr_camera, cabinet_id_sediu)values (sq_ang.nextval, 'Bartels-Ellis', 'Eward', 'ebartelsellis7@wordpress.org', '28-Nov-1968', '02-Mar-2014', null, 'HRDIR', 1, '3341728546',20000,null,'Normal', 1,146, null, null, null);
+
+insert into angajati (id_angajat, nume, prenume, email, data_nasterii, data_angajarii, nr_telefon, id_slujba, id_sediu, CNP, salariu, bonus, angajat_type, id_departament, id_sef, domeniu, cabinet_nr_camera, cabinet_id_sediu)values (sq_ang.nextval, 'Caustic', 'Joete', 'jcaustic8@google.com.br', '12-Mar-1969', '14-May-2013', '1353061911', 'HRDIR', 2, '9538122631', 21000,0.36,'Normal',1, null, null, null, null);
+
+insert into angajati (id_angajat, nume, prenume, email, data_nasterii, data_angajarii, nr_telefon, id_slujba, id_sediu, CNP, salariu, bonus, angajat_type, id_departament, id_sef, domeniu, cabinet_nr_camera, cabinet_id_sediu)values (sq_ang.nextval, 'Regi', 'Nikolaus', 'nregi9@smugmug.com', '02-Dec-1994', '22-Mar-2021', null, 'DOS', 3, '2082721329', 8000, null, 'Normal', 16, null, null, null, null);
+
+insert into angajati (id_angajat, nume, prenume, email, data_nasterii, data_angajarii, nr_telefon, id_slujba, id_sediu, CNP, salariu, bonus, angajat_type, id_departament, id_sef, domeniu, cabinet_nr_camera, cabinet_id_sediu)values (sq_ang.nextval, 'Gittins', 'Merv', 'mgittinsa@networksolutions.com', '01-Mar-1975', '19-Aug-2012', '8778195159', 'DOCF', 4, '5512708279', 30000, 0.3, 'Personal_medical', 31, null, 'Medicina generala', null, null);
+
+insert into angajati (id_angajat, nume, prenume, email, data_nasterii, data_angajarii, nr_telefon, id_slujba, id_sediu, CNP, salariu, bonus, angajat_type, id_departament, id_sef, domeniu, cabinet_nr_camera, cabinet_id_sediu)values (sq_ang.nextval, 'Duffie', 'Olympia', 'oduffieb@discovery.com', '03-Sep-1975', '28-Mar-2012', null, 'HRREC', 5, '2029079529', 9000,
+null, 'Normal', 1, null, null, null, null);
+
+insert into angajati (id_angajat, nume, prenume, email, data_nasterii, data_angajarii, nr_telefon, id_slujba, id_sediu, CNP, salariu, bonus, angajat_type, id_departament, id_sef, domeniu, cabinet_nr_camera, cabinet_id_sediu)values (sq_ang.nextval, 'Treace', 'Eimile', 'etreacec@jalbum.net', '12-Oct-1990', '11-Mar-2011', null, 'CHR', 6, '4403206271',60000, null, 'Personal_medical', 31, null, 'Chirurgie generala', null, null);
+
+insert into angajati (id_angajat, nume, prenume, email, data_nasterii, data_angajarii, nr_telefon, id_slujba, id_sediu, CNP, salariu, bonus, angajat_type, id_departament, id_sef, domeniu, cabinet_nr_camera, cabinet_id_sediu)values (sq_ang.nextval, 'Borrowman', 'Dede', 'dborrowmand@mysql.com', '11-Feb-1972', '16-Mar-2017', '1879576852', 'REC', 7, '0055103669',13000,0.55, 'Normal',16, null, null, null,null);
+
+insert into angajati (id_angajat, nume, prenume, email, data_nasterii, data_angajarii, nr_telefon, id_slujba, id_sediu, CNP, salariu, bonus, angajat_type, id_departament, id_sef, domeniu, cabinet_nr_camera, cabinet_id_sediu)values (sq_ang.nextval, 'Websdale', 'Fianna', 'fwebsdalee@amazon.co.uk', '17-Mar-1985', '11-May-2021', null, 'DRS', 1, '2958648788', 49999, null, 'Personal_medical', 31, null, 'Ginecologie', null, null);
+
+insert into angajati (id_angajat, nume, prenume, email, data_nasterii, data_angajarii, nr_telefon, id_slujba, id_sediu, CNP, salariu, bonus, angajat_type, id_departament, id_sef, domeniu, cabinet_nr_camera, cabinet_id_sediu)values (sq_ang.nextval, 'Bools', 'Bell', 'bbools0@1688.com', '15-Jun-1979', '19-May-2014', '2074334967', 'REC', 1, '7858608819', 10867, 0.95, 'Normal', 16, null, null, null, null);
+
+insert into angajati (id_angajat, nume, prenume, email, data_nasterii, data_angajarii, nr_telefon, id_slujba, id_sediu, CNP, salariu, bonus, angajat_type, id_departament, id_sef, domeniu, cabinet_nr_camera, cabinet_id_sediu)values (sq_ang.nextval, 'Eggerton', 'Celestina', 'ceggerton1@domainmarket.com', '20-Aug-1992', '04-May-2020', '6513938484', 'REC', 2, '1569504865', 10668,0.49, 'Normal',16, null, null, null, null);
+
+insert into angajati (id_angajat, nume, prenume, email, data_nasterii, data_angajarii, nr_telefon, id_slujba, id_sediu, CNP, salariu, bonus, angajat_type, id_departament, id_sef, domeniu, cabinet_nr_camera, cabinet_id_sediu)values (sq_ang.nextval, 'Bryenton', 'Darell', 'dbryenton2@blogs.com', '25-Feb-1962', '13-Dec-2017', '2442085923', 'REC', 3, '3240495015', 10962, 0.89, 'Normal', 16, null, null, null, null);
+
+insert into angajati (id_angajat, nume, prenume, email, data_nasterii, data_angajarii, nr_telefon, id_slujba, id_sediu, CNP, salariu, bonus, angajat_type, id_departament, id_sef, domeniu, cabinet_nr_camera, cabinet_id_sediu)values (sq_ang.nextval, 'Whightman', 'Traci', 'twhightman3@state.tx.us', '03-Dec-1998', '19-May-2019', null, 'REC', 4, '6752006601', 11430, null, 'Normal', 16, null, null, null, null);
+
+insert into angajati (id_angajat, nume, prenume, email, data_nasterii, data_angajarii, nr_telefon, id_slujba, id_sediu, CNP, salariu, bonus, angajat_type, id_departament, id_sef, domeniu, cabinet_nr_camera, cabinet_id_sediu)values (sq_ang.nextval, 'Spencock', 'Arleen', 'aspencock4@smugmug.com', '09-Sep-1964', '14-Dec-2013', null, 'REC', 5, '7438236536', 11523, null, 'Normal', 16, null, null, null, null);
+
+insert into angajati (id_angajat, nume, prenume, email, data_nasterii, data_angajarii, nr_telefon, id_slujba, id_sediu, CNP, salariu, bonus, angajat_type, id_departament, id_sef, domeniu, cabinet_nr_camera, cabinet_id_sediu)values (sq_ang.nextval, 'Ruoss', 'Hanni', 'hruoss0@buzzfeed.com', '27-Oct-1991', '08-Oct-2014', null, 'DRS', 1, '7474896346', 4310, null, 'Personal_medical', 28, null, 'Alergologie', null, null);
+
+insert into angajati (id_angajat, nume, prenume, email, data_nasterii, data_angajarii, nr_telefon, id_slujba, id_sediu, CNP, salariu, bonus, angajat_type, id_departament, id_sef, domeniu, cabinet_nr_camera, cabinet_id_sediu)values (sq_ang.nextval, 'Hallbord', 'Teddie', 'thallbord1@mit.edu', '16-Jan-1991', '25-Jun-2010', '1809853668', 'CHR', 2, '3292512980', 5094, 0.49, 'Personal_medical', 31, null, 'Chirurgie generala', null, null);
+
+insert into angajati (id_angajat, nume, prenume, email, data_nasterii, data_angajarii, nr_telefon, id_slujba, id_sediu, CNP, salariu, bonus, angajat_type, id_departament, id_sef, domeniu, cabinet_nr_camera, cabinet_id_sediu)values (sq_ang.nextval, 'Resun', 'Terra', 'tresun2@answers.com', '08-Jul-1990', '22-Aug-2020', '6702576838', 'CHR', 3, '4446652141', 5435, 0.69, 'Personal_medical', 28, null, 'Chirurgie generala', null, null);
+
+insert into angajati (id_angajat, nume, prenume, email, data_nasterii, data_angajarii, nr_telefon, id_slujba, id_sediu, CNP, salariu, bonus, angajat_type, id_departament, id_sef, domeniu, cabinet_nr_camera, cabinet_id_sediu)values (sq_ang.nextval, 'Calloway', 'Derril', 'dcalloway3@seattletimes.com', '26-Oct-1988', '30-Dec-2011', null, 'DOCF', 4, '1129714098', 5493, null, 'Personal_medical', 31, 163, 'Medicina generala', 145, 2);
+
+insert into angajati (id_angajat, nume, prenume, email, data_nasterii, data_angajarii, nr_telefon, id_slujba, id_sediu, CNP, salariu, bonus, angajat_type, id_departament, id_sef, domeniu, cabinet_nr_camera, cabinet_id_sediu)values (sq_ang.nextval, 'Crowthe', 'Otis', 'ocrowthe4@bbc.co.uk', '22-Jan-1990', '13-Mar-2020', '9815528181', 'DOCF', 5, '5458847520', 4888, 0.03, 'Personal_medical', 31, null, 'Medicina generala', 151, 2);
+
+insert into angajati (id_angajat, nume, prenume, email, data_nasterii, data_angajarii, nr_telefon, id_slujba, id_sediu, CNP, salariu, bonus, angajat_type, id_departament, id_sef, domeniu, cabinet_nr_camera, cabinet_id_sediu)values (sq_ang.nextval, 'Yankov', 'Sharl', 'syankov5@rediff.com', '26-Jan-1993', '30-Jan-2018', '4685119521', 'DOCF', 1, '9478284282', 4464, 0.41, 'Personal_medical', 31, null, 'Medicina sugari', 175, 6);
+
+insert into angajati (id_angajat, nume, prenume, email, data_nasterii, data_angajarii, nr_telefon, id_slujba, id_sediu, CNP, salariu, bonus, angajat_type, id_departament, id_sef, domeniu, cabinet_nr_camera, cabinet_id_sediu)values (sq_ang.nextval, 'Snepp', 'Morissa', 'msnepp6@trellian.com', '12-Aug-1977', '31-Aug-2010', '8219387227', 'DOCF', 2, '9155337872', 4182, 0.95, 'Personal_medical', 31, null, 'Medicina generala', 55, 7);
+
+insert into angajati (id_angajat, nume, prenume, email, data_nasterii, data_angajarii, nr_telefon, id_slujba, id_sediu, CNP, salariu, bonus, angajat_type, id_departament, id_sef, domeniu, cabinet_nr_camera, cabinet_id_sediu)values (sq_ang.nextval, 'Sommerlie', 'Dottie', 'dsommerlie7@mapy.cz', '15-Feb-1964', '14-Aug-2015', '6192043124', 'DRS', 3, '1932746765', 5757, 0.34, 'Personal_medical', 22, null, 'Medicina generala', null, null);
+
+insert into angajati (id_angajat, nume, prenume, email, data_nasterii, data_angajarii, nr_telefon, id_slujba, id_sediu, CNP, salariu, bonus, angajat_type, id_departament, id_sef, domeniu, cabinet_nr_camera, cabinet_id_sediu)values (sq_ang.nextval, 'Aronsohn', 'Diana', 'daronsohn8@pbs.org', '11-Jun-1999', '27-Jun-2016', '7996559055', 'TEHM', 4, '5705264291', 4803, 0.48, 'Personal_medical', 19, 168, 'Ecografii', null, null);
+
+insert into angajati (id_angajat, nume, prenume, email, data_nasterii, data_angajarii, nr_telefon, id_slujba, id_sediu, CNP, salariu, bonus, angajat_type, id_departament, id_sef, domeniu, cabinet_nr_camera, cabinet_id_sediu)values (sq_ang.nextval, 'Sporle', 'Denice', 'dsporle9@chicagotribune.com', '07-Apr-1995', '06-Oct-2020', '3916013692', 'TEHM', 5, '4000611720', 5485, 0.52, 'Personal_medical', 19, null, 'Radiografii', null, null);
+
+insert into angajati (id_angajat, nume, prenume, email, data_nasterii, data_angajarii, nr_telefon, id_slujba, id_sediu, CNP, salariu, bonus, angajat_type, id_departament, id_sef, domeniu, cabinet_nr_camera, cabinet_id_sediu)values (sq_ang.nextval, 'Addionizio', 'Wren', 'waddionizio0@slate.com', '26-Feb-1963', '26-Nov-2015', null, 'ASIS', null, '5695258685', 12867, null, 'Personal_medical', 28, null, 'Asistent nasteri', null, null);
+
+insert into angajati (id_angajat, nume, prenume, email, data_nasterii, data_angajarii, nr_telefon, id_slujba, id_sediu, CNP, salariu, bonus, angajat_type, id_departament, id_sef, domeniu, cabinet_nr_camera, cabinet_id_sediu)values (sq_ang.nextval, 'Lownes', 'Lila', 'llownes1@ihg.com', '22-Jan-1967', '28-Feb-2012', '5156665505', 'ASIS', null, '0237043300', 11743, 0.8, 'Personal_medical', 31, null, 'Recoltari sange', null, null);
+
+insert into angajati (id_angajat, nume, prenume, email, data_nasterii, data_angajarii, nr_telefon, id_slujba, id_sediu, CNP, salariu, bonus, angajat_type, id_departament, id_sef, domeniu, cabinet_nr_camera, cabinet_id_sediu)values (sq_ang.nextval, 'Shepstone', 'Free', 'fshepstone2@wisc.edu', '17-Apr-1995', '25-Feb-2017', '5642768766', 'ASIS', null, '8415466226', 10937, 0.33, 'Personal_medical', 31, 164, 'Medicina generala', null, null);
+
+
+insert into APARATURI (COD, denumire, camera_nr_camera, camera_id_sediu) values ('4842061448', 'Ecograf', 106, 1);
+insert into APARATURI (COD, denumire, camera_nr_camera, camera_id_sediu) values ('6943215574', 'Radiograf', 175, 6);
+insert into APARATURI (COD, denumire, camera_nr_camera, camera_id_sediu) values ('0800423984', 'Ecograf', 178, 6);
+insert into APARATURI (COD, denumire, camera_nr_camera, camera_id_sediu) values ('4963679175', 'Ecograf', 109, 1);
+insert into APARATURI (COD, denumire, camera_nr_camera, camera_id_sediu) values ('4615135858', 'Radiograf', 109, 1);
+insert into APARATURI (COD, denumire, camera_nr_camera, camera_id_sediu) values ('1471374661', 'Ecograf', 28, 3);
+insert into CALIFICARI (id_angajat, id_certificare, denumire_calificare, domeniu_calificare, UNITATE_EMITENTA_CERTIFICARE) values ('171', '1925', 'Licenta', 'Asistenta', 'Facultatea de Medicină „Titu Maiorescu”');
+insert into CALIFICARI(id_angajat, id_certificare, denumire_calificare, domeniu_calificare, UNITATE_EMITENTA_CERTIFICARE) values ('170', '61094', 'Curs', 'Medicina generala', 'Universitatea de Medicină „Carol Davila”');
+insert into CALIFICARI (id_angajat, id_certificare, denumire_calificare, domeniu_calificare, UNITATE_EMITENTA_CERTIFICARE) values ('163', '0243', 'Curs', 'Medicina generala', 'Universitatea de Medicină „Carol Davila”');
+insert into CALIFICARI (id_angajat, id_certificare, denumire_calificare, domeniu_calificare, UNITATE_EMITENTA_CERTIFICARE) values ('149', '5894', 'Master', 'Medicina generala', 'Universitatea de Medicină  din Craiova');
+insert into CALIFICARI (id_angajat, id_certificare, denumire_calificare, domeniu_calificare, UNITATE_EMITENTA_CERTIFICARE) values ('161', '76293', 'Licenta', 'Chirurgie', 'Facultatea de Medicină „Titu Maiorescu”');
+insert into CALIFICARI (id_angajat, id_certificare, denumire_calificare, domeniu_calificare, UNITATE_EMITENTA_CERTIFICARE) values ('164', '10952', 'Licenta', 'Asistenta', 'Universitatea de Medicină „Carol Davila”');
+insert into CALIFICARI (id_angajat, id_certificare, denumire_calificare, domeniu_calificare, UNITATE_EMITENTA_CERTIFICARE) values ('160', '23952', 'Licenta', 'Chirurgie', 'Universitatea de Medicină „Carol Davila”');
+insert into CALIFICARI (id_angajat, id_certificare, denumire_calificare, domeniu_calificare, UNITATE_EMITENTA_CERTIFICARE) values ('164', '20178', 'Curs', 'Asistenta', 'Facultatea de Medicină „Titu Maiorescu”');
+insert into CALIFICARI (id_angajat, id_certificare, denumire_calificare, domeniu_calificare, UNITATE_EMITENTA_CERTIFICARE) values ('171', '8011', 'Licenta', 'Chirurgie', 'Universitatea de Medicină „Carol Davila”');
+insert into CALIFICARI (id_angajat, id_certificare, denumire_calificare, domeniu_calificare, UNITATE_EMITENTA_CERTIFICARE) values ('162', '0439', 'Curs', 'Chirurgie', 'Universitatea de Medicină „Carol Davila”');
+
+insert into PACIENTI (id_pacient, nume, prenume, CNP, gen, data_nasterii, CID) values (1, 'Kloser', 'Lydie', '2118067844', 'M', '17-Sep-1986', null);
+insert into PACIENTI (id_pacient, nume, prenume, CNP, gen, data_nasterii, CID) values (2, 'Corballis', 'Klarrisa', '6565792054', 'F', '08-Mar-1985', null);
+insert into PACIENTI (id_pacient, nume, prenume, CNP, gen, data_nasterii, CID) values (3, 'Padbery', 'Hilary', '5466490822', 'M', '23-Nov-2013', '4401347676');
+insert into PACIENTI (id_pacient, nume, prenume, CNP, gen, data_nasterii, CID) values (4, 'Whittenbury', 'Yetty', '0614682258', 'M', '24-Aug-1999', '4099611876');
+insert into PACIENTI (id_pacient, nume, prenume, CNP, gen, data_nasterii, CID) values (5, 'Mantz', 'Janeczka', '3402711486', 'F', '07-Aug-2000', null);
+insert into PACIENTI (id_pacient, nume, prenume, CNP, gen, data_nasterii, CID) values (6, 'McPhelimy', 'Alistair', '5081123781', 'M', '13-Oct-1983', '7978370739');
+insert into PACIENTI (id_pacient, nume, prenume, CNP, gen, data_nasterii, CID) values (7, 'Glencross', 'Dani', '9774469240', 'F', '24-Feb-1963', '2166068987');
+insert into PACIENTI (id_pacient, nume, prenume, CNP, gen, data_nasterii, CID) values (8, 'Cannan', 'Reyna', '6225496149', 'F', '24-Oct-2007', '0392793113');
+insert into PACIENTI (id_pacient, nume, prenume, CNP, gen, data_nasterii, CID) values (9, 'Mauditt', 'Eba', '8077947921', 'F', '05-Oct-1995', '0824608976');
+insert into PACIENTI (id_pacient, nume, prenume, CNP, gen, data_nasterii, CID) values (10, 'Jowitt', 'Bunni', '6879671209', 'M', '24-Oct-1976', '4404077467');
+insert into PACIENTI (id_pacient, nume, prenume, CNP, gen, data_nasterii, CID) values (11, 'Dossit', 'Packston', '3737279373', 'F', '13-Mar-1974', null);
+insert into PACIENTI (id_pacient, nume, prenume, CNP, gen, data_nasterii, CID) values (12, 'Abramovitch', 'Kerrill', '5638955518', 'M', '14-Dec-2008', null);
+insert into PACIENTI (id_pacient, nume, prenume, CNP, gen, data_nasterii, CID) values (13, 'Spinola', 'Alida', '8437066581', 'M', '16-Aug-1995', '5467748432');
+insert into PACIENTI (id_pacient, nume, prenume, CNP, gen, data_nasterii, CID) values (14, 'Usher', 'Abagail', '2268329623', 'M', '25-Jun-1970', '9604011669');
+insert into PACIENTI (id_pacient, nume, prenume, CNP, gen, data_nasterii, CID) values (15, 'Roxbee', 'Sean', '1438167490', 'F', '20-Mar-2005', '9967399090');
+insert into PACIENTI (id_pacient, nume, prenume, CNP, gen, data_nasterii, CID) values (16, 'Beazleigh', 'Janka', '4235550810', 'F', '17-May-1997', null);
+insert into PACIENTI (id_pacient, nume, prenume, CNP, gen, data_nasterii, CID) values (17, 'Harkes', 'Aloisia', '9177435680', 'M', '04-Dec-1973', null);
+insert into PACIENTI (id_pacient, nume, prenume, CNP, gen, data_nasterii, CID) values (18, 'Siebert', 'Mavis', '1346618224', 'M', '24-Dec-1979', '1225520207');
+insert into PACIENTI (id_pacient, nume, prenume, CNP, gen, data_nasterii, CID) values (19, 'Kingescot', 'Aleksandr', '0713160365', 'F', '11-Dec-2002', '9486626464');
+insert into PACIENTI (id_pacient, nume, prenume, CNP, gen, data_nasterii, CID) values (20, 'Pinckard', 'Veradis', '8570443153', 'M', '19-Apr-1970', '1400146577');
+insert into PACIENTI (id_pacient, nume, prenume, CNP, gen, data_nasterii, CID) values (21, 'Bromwich', 'Abby', '0634385208', 'F', '21-Jun-2006', '2137952572');
+insert into PACIENTI (id_pacient, nume, prenume, CNP, gen, data_nasterii, CID) values (22, 'Franzewitch', 'Charlie', '8740201783', 'M', '08-Mar-1986', '7660533541');
+insert into PACIENTI (id_pacient, nume, prenume, CNP, gen, data_nasterii, CID) values (23, 'Kezor', 'Araldo', '5963579937', 'M', '19-Feb-1992', '5807594274');
+insert into PACIENTI (id_pacient, nume, prenume, CNP, gen, data_nasterii, CID) values (24, 'Ryan', 'Keen', '0070261792', 'M', '12-May-2013', null);
+insert into PACIENTI (id_pacient, nume, prenume, CNP, gen, data_nasterii, CID) values (25, 'Nornable', 'Patti', '3618090552', 'F', '23-Jun-1981', '5968224576');
+
+insert into ISTORIC_AFECTIUNI (id_pacient, id_afectiune, data_depistare, data_tratare) values (12, 'RACI', '14-Jun-2018', '25-Jun-2018');
+insert into ISTORIC_AFECTIUNI (id_pacient, id_afectiune, data_depistare, data_tratare) values (14, 'PTRRN', '18-Nov-2020', null);
+insert into ISTORIC_AFECTIUNI (id_pacient, id_afectiune, data_depistare, data_tratare) values (18, 'GUTA', '27-Mar-2019', '29-Mar-2021');
+insert into ISTORIC_AFECTIUNI (id_pacient, id_afectiune, data_depistare, data_tratare) values (17, 'ATACC', '24-Apr-2019', NULL);
+insert into ISTORIC_AFECTIUNI (id_pacient, id_afectiune, data_depistare, data_tratare) values (14, 'RACI', '09-Oct-2018', '19-Aug-2019');
+insert into ISTORIC_AFECTIUNI (id_pacient, id_afectiune, data_depistare, data_tratare) values (23, 'GUTA', '24-May-2010', '08-Sep-2020');
+insert into ISTORIC_AFECTIUNI (id_pacient, id_afectiune, data_depistare, data_tratare) values (5, 'ATACC', '28-Sep-2018', null);
+insert into ISTORIC_AFECTIUNI (id_pacient, id_afectiune, data_depistare, data_tratare) values (8, 'RACI', '08-Sep-2018','18-Sep-2018');
+insert into ISTORIC_AFECTIUNI (id_pacient, id_afectiune, data_depistare, data_tratare) values (13, 'MIGR', '21-Apr-2020', null);
+insert into ISTORIC_AFECTIUNI (id_pacient, id_afectiune, data_depistare, data_tratare) values (18, 'DIABI', '01-Jan-2021', null);
+insert into ISTORIC_AFECTIUNI (id_pacient, id_afectiune, data_depistare, data_tratare) values (21, 'MIGR', '07-Aug-2018', '30-Apr-2019');
+insert into ISTORIC_AFECTIUNI (id_pacient, id_afectiune, data_depistare, data_tratare) values (23, 'OSRPT', '15-May-2021', '20-Jan-2021');
+insert into ISTORIC_AFECTIUNI (id_pacient, id_afectiune, data_depistare, data_tratare) values (2, 'MIGR', '22-Apr-2019', '24-Dec-2019');
+insert into ISTORIC_AFECTIUNI (id_pacient, id_afectiune, data_depistare, data_tratare) values (6, 'RACI', '30-Aug-2018', '30-Sep-2018');
+insert into ISTORIC_AFECTIUNI (id_pacient, id_afectiune, data_depistare, data_tratare) values (7, 'COV', '30-Mar-2021', null);
+insert into ISTORIC_AFECTIUNI (id_pacient, id_afectiune, data_depistare, data_tratare) values (3, 'RACI', '18-Jun-2021', null);
+insert into ISTORIC_AFECTIUNI (id_pacient, id_afectiune, data_depistare, data_tratare) values (24, 'GUTA', '13-Mar-2020', null);
+insert into ISTORIC_AFECTIUNI (id_pacient, id_afectiune, data_depistare, data_tratare) values (23, 'GRIP', '22-May-2018', null);
+insert into ISTORIC_AFECTIUNI (id_pacient, id_afectiune, data_depistare, data_tratare) values (18, 'DIABI', '20-Mar-2020', null);
+insert into ISTORIC_AFECTIUNI (id_pacient, id_afectiune, data_depistare, data_tratare) values (17, 'OSRPT', '04-Sep-2020', null);
+insert into ISTORIC_AFECTIUNI (id_pacient, id_afectiune, data_depistare, data_tratare) values (4, 'RACI', '04-Feb-2018', '30-Jul-2020');
+insert into ISTORIC_AFECTIUNI (id_pacient, id_afectiune, data_depistare, data_tratare) values (18, 'MIGR', '06-Dec-2017', null);
+insert into ISTORIC_AFECTIUNI (id_pacient, id_afectiune, data_depistare, data_tratare) values (13, 'DIABI', '17-Oct-2017', '30-Oct-2019');
+insert into ISTORIC_AFECTIUNI (id_pacient, id_afectiune, data_depistare, data_tratare) values (6, 'ASTM', '29-Apr-2017', '26-Apr-2019');
+insert into ISTORIC_AFECTIUNI (id_pacient, id_afectiune, data_depistare, data_tratare) values (6, 'MIGR', '07-Jun-2016', null);
+
+insert into PROGRAMARI (id_programare, id_receptionist, id_pacient, tip, data, ora, status) values (sq_prog.nextval, 158, 22, 'Normal', '13-Jan-2017', '14:00', 'Absenta');
+insert into PROGRAMARI (id_programare, id_receptionist, id_pacient, tip, data, ora, status) values (sq_prog.nextval, 152, 20, 'Normal', '25-Jan-2019', '12:40', 'Implinita');
+insert into PROGRAMARI (id_programare, id_receptionist, id_pacient, tip, data, ora, status) values (sq_prog.nextval, 157, 25, 'Normal', '22-Jul-2017', '18:08', 'Implinita');
+insert into PROGRAMARI (id_programare, id_receptionist, id_pacient, tip, data, ora, status) values (sq_prog.nextval, 152, 18, 'Normal', '26-Jun-2017', '12:06', 'Anulata');
+insert into PROGRAMARI (id_programare, id_receptionist, id_pacient, tip, data, ora, status) values (sq_prog.nextval, 156, 20, 'Normal', '20-Jun-2019', '18:28', 'Absenta');
+insert into PROGRAMARI (id_programare, id_receptionist, id_pacient, tip, data, ora, status) values (sq_prog.nextval, 144, 17, 'Normal', '18-Feb-2015', '11:28', 'Implinita');
+insert into PROGRAMARI (id_programare, id_receptionist, id_pacient, tip, data, ora, status) values (sq_prog.nextval, 157, 6, 'Normal', '03-Nov-2019', '14:38', 'Anulata');
+insert into PROGRAMARI (id_programare, id_receptionist, id_pacient, tip, data, ora, status) values (sq_prog.nextval, 157, 20, 'Normal', '21-Dec-2018', '15:34', 'Implinita');
+insert into PROGRAMARI (id_programare, id_receptionist, id_pacient, tip, data, ora, status) values (sq_prog.nextval, 156, 25, 'Normal', '03-Oct-2017', '19:53', 'Anulata');
+insert into PROGRAMARI (id_programare, id_receptionist, id_pacient, tip, data, ora, status) values (sq_prog.nextval, 156, 9, 'Normal', '06-Apr-2021', '16:02', 'Anulata');
+insert into PROGRAMARI (id_programare, id_receptionist, id_pacient, tip, data, ora, status) values (sq_prog.nextval, 158, 21, 'Normal', '10-Jun-2017', '7:25', 'Implinita');
+insert into PROGRAMARI (id_programare, id_receptionist, id_pacient, tip, data, ora, status) values (sq_prog.nextval, 154, 20, 'Normal', '15-Oct-2016', '21:02', 'Absenta');
+insert into PROGRAMARI (id_programare, id_receptionist, id_pacient, tip, data, ora, status) values (sq_prog.nextval, 152, 1, 'Normal', '24-Nov-2016', '13:12', 'Anulata');
+insert into PROGRAMARI (id_programare, id_receptionist, id_pacient, tip, data, ora, status) values (sq_prog.nextval, 145, 11, 'Normal', '27-Jul-2018', '19:23', 'Implinita');
+insert into PROGRAMARI (id_programare, id_receptionist, id_pacient, tip, data, ora, status) values (sq_prog.nextval, 158, 20, 'Normal', '17-Mar-2015', '11:18', 'Implinita');
+insert into PROGRAMARI (id_programare, id_receptionist, id_pacient, tip, data, ora, status) values (sq_prog.nextval, 158, 7, 'Urgenta', '28-Dec-2020', '19:25', 'Implinita');
+insert into PROGRAMARI (id_programare, id_receptionist, id_pacient, tip, data, ora, status) values (sq_prog.nextval, 156, 19, 'Urgenta', '01-Aug-2015', '16:33', 'Implinita');
+insert into PROGRAMARI (id_programare, id_receptionist, id_pacient, tip, data, ora, status) values (sq_prog.nextval, 155, 4, 'Urgenta', '04-Mar-2021', '13:48', 'Implinita');
+insert into PROGRAMARI (id_pacient, id_programare, id_receptionist, data, ora, status, tip) values (3, sq_prog.nextval, 145, '27-Mar-2019', '17:09', 'Implinita', 'Normala');
+insert into PROGRAMARI (id_pacient, id_programare, id_receptionist, data, ora, status, tip) values (3, sq_prog.nextval, 157, '10-Jul-2018', '16:50', 'Implinita', 'Normala');
+insert into PROGRAMARI (id_pacient, id_programare, id_receptionist, data, ora, status, tip) values (2, sq_prog.nextval, 157, '31-Aug-2019', '7:39', 'Implinita', 'Normala');
+insert into PROGRAMARI (id_pacient, id_programare, id_receptionist, data, ora, status, tip) values (18, sq_prog.nextval, 155, '29-Nov-2018', '12:20', 'Implinita', 'Normala');
+insert into PROGRAMARI (id_pacient, id_programare, id_receptionist, data, ora, status, tip) values (23, sq_prog.nextval, 154, '18-Jan-2020', '10:04', 'Implinita', 'Normala');
+insert into PROGRAMARI (id_pacient, id_programare, id_receptionist, data, ora, status, tip) values (5, sq_prog.nextval, 154, '09-Sep-2019', '12:49', 'Implinita', 'Normala');
+insert into PROGRAMARI (id_pacient, id_programare, id_receptionist, data, ora, status, tip) values (23, sq_prog.nextval, 145, '16-Dec-2019', '16:24', 'Implinita', 'Normala');
+insert into PROGRAMARI (id_pacient, id_programare, id_receptionist, data, ora, status, tip) values (2, sq_prog.nextval, 145, '30-May-2019', '12:24', 'Implinita', 'Normala');
+insert into PROGRAMARI (id_pacient, id_programare, id_receptionist, data, ora, status, tip) values (8, sq_prog.nextval, 155, '26-Mar-2021', '12:55', 'Implinita', 'Normala');
+insert into PROGRAMARI (id_pacient, id_programare, id_receptionist, data, ora, status, tip) values (23, sq_prog.nextval, 157, '24-Jun-2018', '16:26', 'Implinita', 'Normala');
+
+insert into PROCEDURI_MEDICALE(id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, proceduri_medicale_type, recoltare_nr_probe,
+consult_motiv, operatie_nr_camera, operatie_id_sediu, operatie_id_tip_operatie,
+operatie_observatii)
+values (73, 152, 20, '12:45', 'Consult',NULL, NULL, NULL, NULL, NULL, NULL);
+insert into PROCEDURI_MEDICALE(id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, proceduri_medicale_type, recoltare_nr_probe,
+consult_motiv, operatie_nr_camera, operatie_id_sediu, operatie_id_tip_operatie,
+operatie_observatii)
+values (74, 157, 25, '18:30', 'Consult', NULL, 'Ecografie', NULL, NULL, NULL, NULL);
+insert into PROCEDURI_MEDICALE(id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, proceduri_medicale_type, recoltare_nr_probe,
+consult_motiv, operatie_nr_camera, operatie_id_sediu, operatie_id_tip_operatie,
+operatie_observatii)
+values (77, 144, 17, '12:00', 'Operatie', NULL, NULL, 115, 1, 9, NULL);
+insert into PROCEDURI_MEDICALE(id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, proceduri_medicale_type, recoltare_nr_probe,
+consult_motiv, operatie_nr_camera, operatie_id_sediu, operatie_id_tip_operatie,
+operatie_observatii)
+values (79, 157, 20, '15:35', 'Operatie', NULL, NULL, 154, 2, 8, 'Mici complicatii');
+insert into PROCEDURI_MEDICALE(id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, proceduri_medicale_type, recoltare_nr_probe,
+consult_motiv, operatie_nr_camera, operatie_id_sediu, operatie_id_tip_operatie,
+operatie_observatii)
+values (82, 158, 21, '7:25', 'Consult', NULL, NULL, NULL, NULL, NULL, NULL);
+insert into PROCEDURI_MEDICALE(id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, proceduri_medicale_type, recoltare_nr_probe,
+consult_motiv, operatie_nr_camera, operatie_id_sediu, operatie_id_tip_operatie,
+operatie_observatii)
+values (85,145,11, '19:23', 'Recoltare', 3, NULL, NULL, NULL, NULL, NULL);
+insert into PROCEDURI_MEDICALE(id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, proceduri_medicale_type, recoltare_nr_probe,
+consult_motiv, operatie_nr_camera, operatie_id_sediu, operatie_id_tip_operatie,
+operatie_observatii)
+values (86,158,20, '11:18', 'Recoltare', 2, NULL, NULL, NULL, NULL, NULL);
+insert into PROCEDURI_MEDICALE(id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, proceduri_medicale_type, recoltare_nr_probe,
+consult_motiv, operatie_nr_camera, operatie_id_sediu, operatie_id_tip_operatie,
+operatie_observatii)
+values (87, 158, 7, '19:25', 'Recoltare', 4, NULL, NULL, NULL, NULL, NULL);
+insert into PROCEDURI_MEDICALE(id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, proceduri_medicale_type, recoltare_nr_probe,
+consult_motiv, operatie_nr_camera, operatie_id_sediu, operatie_id_tip_operatie,
+operatie_observatii)
+values (88, 156, 19, '16:33', 'Consult', NULL, NULL, NULL, NULL, NULL, NULL);
+insert into PROCEDURI_MEDICALE(id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, proceduri_medicale_type, recoltare_nr_probe,
+consult_motiv, operatie_nr_camera, operatie_id_sediu, operatie_id_tip_operatie,
+operatie_observatii)
+values (89,155,4, '13:48', 'Consult', NULL, NULL, NULL, NULL, NULL, NULL);
+insert into PROCEDURI_MEDICALE(id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, proceduri_medicale_type, recoltare_nr_probe,
+consult_motiv, operatie_nr_camera, operatie_id_sediu, operatie_id_tip_operatie,
+operatie_observatii)
+values (90,145,3, '17:15', 'Consult', NULL, 'Ecografie', NULL, NULL, NULL, NULL);
+insert into PROCEDURI_MEDICALE(id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, proceduri_medicale_type, recoltare_nr_probe,
+consult_motiv, operatie_nr_camera, operatie_id_sediu, operatie_id_tip_operatie,
+operatie_observatii)
+values (91,157,3, '16:50', 'Operatie', NULL, NULL, 154, 2, 1, 'Mici complicatii');
+insert into PROCEDURI_MEDICALE(id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, proceduri_medicale_type, recoltare_nr_probe,
+consult_motiv, operatie_nr_camera, operatie_id_sediu, operatie_id_tip_operatie,
+operatie_observatii)
+values (92,157,2, '7:39', 'Consult', NULL, 'Radiografie', NULL, NULL, NULL, NULL);
+insert into PROCEDURI_MEDICALE(id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, proceduri_medicale_type, recoltare_nr_probe,
+consult_motiv, operatie_nr_camera, operatie_id_sediu, operatie_id_tip_operatie,
+operatie_observatii)
+values (93,155,18, '12:20', 'Consult', NULL, 'Recomandare', NULL, NULL, NULL, NULL);
+insert into PROCEDURI_MEDICALE(id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, proceduri_medicale_type, recoltare_nr_probe,
+consult_motiv, operatie_nr_camera, operatie_id_sediu, operatie_id_tip_operatie,
+operatie_observatii)
+values (94,154,23, '10:04', 'Operatie', NULL, NULL, 157, 2, 4, NULL);
+insert into PROCEDURI_MEDICALE(id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, proceduri_medicale_type, recoltare_nr_probe,
+consult_motiv, operatie_nr_camera, operatie_id_sediu, operatie_id_tip_operatie,
+operatie_observatii)
+values (95,154,5, '12:49', 'Recoltare', 2, NULL, NULL, NULL, NULL, NULL);
+insert into PROCEDURI_MEDICALE(id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, proceduri_medicale_type, recoltare_nr_probe,
+consult_motiv, operatie_nr_camera, operatie_id_sediu, operatie_id_tip_operatie,
+operatie_observatii)
+values (96,145,23, '16:30', 'Consult',NULL, NULL, NULL, NULL, NULL, NULL);
+insert into PROCEDURI_MEDICALE(id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, proceduri_medicale_type, recoltare_nr_probe,
+consult_motiv, operatie_nr_camera, operatie_id_sediu, operatie_id_tip_operatie,
+operatie_observatii)
+values (97,145,2, '12:25', 'Consult', NULL, 'Rutina', NULL, NULL, NULL, NULL);
+insert into PROCEDURI_MEDICALE(id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, proceduri_medicale_type, recoltare_nr_probe,
+consult_motiv, operatie_nr_camera, operatie_id_sediu, operatie_id_tip_operatie,
+operatie_observatii)
+values (98,155,8, '12:55',  'Operatie', NULL, NULL, 121, 1, 5, 'Complicatii grave');
+insert into PROCEDURI_MEDICALE(id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, proceduri_medicale_type, recoltare_nr_probe,
+consult_motiv, operatie_nr_camera, operatie_id_sediu, operatie_id_tip_operatie,
+operatie_observatii)
+values (99,157,23, '16:30', 'Recoltare', 4 , NULL, NULL, NULL, NULL, NULL);
+
+insert into diagnostice (id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, id_afectiune, observatii)
+values (73, 152, 20, '12:45', 'AMIG', 'Forma usoara');
+insert into diagnostice (id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, id_afectiune, observatii)
+values (73, 152, 20, '12:45', 'ASTM', 'Forma grava');
+insert into diagnostice (id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, id_afectiune, observatii)
+values (73, 152, 20, '12:45', 'GRIP', NULL);
+insert into diagnostice (id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, id_afectiune, observatii)
+values (82, 158, 21, '7:25', 'COV', 'Forma grava');
+insert into diagnostice (id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, id_afectiune, observatii)
+values (82, 158, 21, '7:25', 'MIGR', NULL);
+insert into diagnostice (id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, id_afectiune, observatii)
+values (82, 158, 21, '7:25',  'PTRRN', 'Preventiv');
+insert into diagnostice (id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, id_afectiune, observatii)
+values (82, 158, 21, '7:25', 'AMIG', NULL);
+insert into diagnostice (id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, id_afectiune, observatii)
+values (88, 156, 19, '16:33', 'DIABI', NULL);
+insert into diagnostice (id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, id_afectiune, observatii)
+values (88, 156, 19, '16:33', 'DIABZ', 'Preventiv');
+insert into diagnostice (id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, id_afectiune, observatii)
+values (88, 156, 19, '16:33', 'OSRPT', NULL);
+insert into diagnostice (id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, id_afectiune, observatii)
+values (89,155,4, '13:48', 'COV', 'Forma usoara');
+insert into diagnostice (id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, id_afectiune, observatii)
+values (89,155,4, '13:48', 'MIGR', NULL);
+insert into diagnostice (id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, id_afectiune, observatii)
+values(93,155,18, '12:20', 'GUTA', NULL);
+insert into diagnostice (id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, id_afectiune, observatii)
+values(93,155,18, '12:20', 'RACI', NULL);
+insert into diagnostice (id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, id_afectiune, observatii)
+values(93,155,18, '12:20',  'AMIG', 'Preventiv');
+insert into diagnostice (id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, id_afectiune, observatii)
+values(97,145,2, '12:25', 'RACI', NULL);
+insert into diagnostice (id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, id_afectiune, observatii)
+values(97,145,2, '12:25', 'MIGR', 'Forma usoara');
+
+insert into tratamente (id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, id_afectiune, id_medicament, data_incepere, durata, unitati_zi)
+values (73, 152, 20, '12:45', 'AMIG', 89796871, '26-JAN-2019', 10, '15ml');
+insert into tratamente (id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, id_afectiune, id_medicament, data_incepere, durata, unitati_zi)
+values (73, 152, 20, '12:45', 'ASTM', 3234, '29-JAN-2019', 30, '3');
+insert into tratamente (id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, id_afectiune, id_medicament, data_incepere, durata, unitati_zi)
+values (73, 152, 20, '12:45', 'GRIP', 1077865, '26-JAN-2019', 15, '2');
+insert into tratamente (id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, id_afectiune, id_medicament, data_incepere, durata, unitati_zi)
+values (82, 158, 21, '7:25', 'COV', 6536367, '11-JUN-2017', 7, '1');
+insert into tratamente (id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, id_afectiune, id_medicament, data_incepere, durata, unitati_zi)
+values (82, 158, 21, '7:25', 'COV', 1077865, '11-JUN-2017', 10, '2');
+insert into tratamente (id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, id_afectiune, id_medicament, data_incepere, durata, unitati_zi)
+values (82, 158, 21, '7:25', 'MIGR', 20174841, '11-JUN-2017', 3, '3');
+insert into tratamente (id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, id_afectiune, id_medicament, data_incepere, durata, unitati_zi)
+values (82, 158, 21, '7:25', 'AMIG', 89796871, '11-JUN-2017', 10, '25ml');
+insert into tratamente (id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, id_afectiune, id_medicament, data_incepere, durata, unitati_zi)
+values (88, 156, 19, '16:33', 'DIABI', 707, '5-AUG-2015', 10, '1');
+insert into tratamente (id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, id_afectiune, id_medicament, data_incepere, durata, unitati_zi)
+values  (88, 156, 19, '16:33', 'DIABI', 71688, '5-AUG-2015', 15, '3');
+insert into tratamente (id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, id_afectiune, id_medicament, data_incepere, durata, unitati_zi)
+values (89,155,4, '13:48', 'COV', 6536367, '5-MAR-2021', 10, '1');
+insert into tratamente (id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, id_afectiune, id_medicament, data_incepere, durata, unitati_zi)
+values (89,155,4, '13:48', 'COV', 1077865,  '5-MAR-2021', 3, '1');
+insert into tratamente (id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, id_afectiune, id_medicament, data_incepere, durata, unitati_zi)
+values (89,155,4, '13:48', 'MIGR', 20174841,  '1-DEC-2018', NULL, NULL);
+insert into tratamente (id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, id_afectiune, id_medicament, data_incepere, durata, unitati_zi)
+values (93,155,18, '12:20', 'GUTA', 13135565, '1-DEC-2018', 5, '3');
+insert into tratamente (id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, id_afectiune, id_medicament, data_incepere, durata, unitati_zi)
+values (93,155,18, '12:20', 'RACI',  89796871, '1-DEC-2018', 10, '25ml');
+insert into tratamente (id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, id_afectiune, id_medicament, data_incepere, durata, unitati_zi)
+values (97,145,2, '12:25', 'RACI', 89796871, '1-JUN-2019', 10, '15ml');
+insert into tratamente (id_programare, id_receptionist, id_pacient, 
+ora_incepere_reala, id_afectiune, id_medicament, data_incepere, durata, unitati_zi)
+values (97,145,2, '12:25', 'MIGR', 56, '1-JUN-2019', 3, NULL);
+
+insert into TRIMITERI(id_programare, id_receptionist, id_pacient, ora_incepere_reala, 
+id_afectiune, specializare, motiv)
+values(73, 152, 20, '12:45', 'AMIG', 'ORL', NULL);
+
+insert into TRIMITERI(id_programare, id_receptionist, id_pacient, ora_incepere_reala, 
+id_afectiune, specializare, motiv)
+values
+(73, 152, 20, '12:45', 'ASTM', 'Pneumolog', 'Posibile complicatii');
+insert into TRIMITERI(id_programare, id_receptionist, id_pacient, ora_incepere_reala, 
+id_afectiune, specializare, motiv)
+values
+(82, 158, 21, '7:25', 'COV', 'Pneumolog', 'Posibile complicatii');
+insert into TRIMITERI(id_programare, id_receptionist, id_pacient, ora_incepere_reala, 
+id_afectiune, specializare, motiv)
+values
+(82, 158, 21, '7:25',  'PTRRN', 'Nefrologie', 'Diagnosticare corecta');
+insert into TRIMITERI(id_programare, id_receptionist, id_pacient, ora_incepere_reala, 
+id_afectiune, specializare, motiv)
+values
+(82, 158, 21, '7:25', 'AMIG', 'ORL', NULL);
+insert into TRIMITERI(id_programare, id_receptionist, id_pacient, ora_incepere_reala, 
+id_afectiune, specializare, motiv)
+values
+(88, 156, 19, '16:33', 'DIABI', 'Endocrinolog', NULL);
+insert into TRIMITERI(id_programare, id_receptionist, id_pacient, ora_incepere_reala, 
+id_afectiune, specializare, motiv)
+values
+(88, 156, 19, '16:33', 'DIABZ', 'Diabetolog', NULL);
+insert into TRIMITERI(id_programare, id_receptionist, id_pacient, ora_incepere_reala, 
+id_afectiune, specializare, motiv)
+values
+(89,155,4, '13:48', 'COV', 'Pneumolog', 'Preventiv');
+insert into TRIMITERI(id_programare, id_receptionist, id_pacient, ora_incepere_reala, 
+id_afectiune, specializare, motiv)
+values
+(93,155,18, '12:20',  'AMIG',  'ORL', NULL);
+insert into TRIMITERI(id_programare, id_receptionist, id_pacient, ora_incepere_reala, 
+id_afectiune, specializare, motiv)
+values
+(88, 156, 19, '16:33', 'OSRPT', 'Ortoped', NULL);
+insert into TRIMITERI(id_programare, id_receptionist, id_pacient, ora_incepere_reala, 
+id_afectiune, specializare, motiv)
+values
+(97,145,2, '12:25', 'RACI',  'Pneumolog', 'Preventiv');
+
+insert into probe(id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba, tip, data_expirare)
+values (85,145,11, '19:23', SQ_PROBE.nextval, 'Urocultura', '29-JUL-2018');
+insert into probe(id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba, tip, data_expirare)
+values 
+(85,145,11, '19:23',SQ_PROBE.nextval, 'Sange', '28-JUL-2018');
+insert into probe(id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba, tip, data_expirare)
+values (85,145,11, '19:23',SQ_PROBE.nextval, 'Coprocultura', '29-JUL-2018');
+insert into probe(id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba, tip, data_expirare)
+values (86,158,20, '11:18',SQ_PROBE.nextval,'Sange', NULL );
+insert into probe(id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba, tip, data_expirare)
+values (86,158,20, '11:18',SQ_PROBE.nextval, 'Urocultura', '18-MAR-2015' );
+insert into probe(id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba, tip, data_expirare)
+values (87, 158, 7, '19:25', SQ_PROBE.nextval,'Urocultura', '29-DEC-2020');
+insert into probe(id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba, tip, data_expirare)
+values (87, 158, 7, '19:25',SQ_PROBE.nextval,  'Coprocultura', '30-DEC-2020');
+insert into probe(id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba, tip, data_expirare)
+values (87, 158, 7, '19:25',SQ_PROBE.nextval, 'Sange', '30-DEC-2020');
+insert into probe(id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba, tip, data_expirare)
+values (87, 158, 7, '19:25',SQ_PROBE.nextval, 'Lingual', NULL);
+insert into probe(id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba, tip, data_expirare)
+values (95,154,5, '12:49', SQ_PROBE.nextval, 'Urocultura', '10-SEP-2019');
+insert into probe(id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba, tip, data_expirare)
+values (95,154,5, '12:49', SQ_PROBE.nextval,  'Coprocultura', NULL);
+insert into probe(id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba, tip, data_expirare)
+values (99,157,23, '16:30',SQ_PROBE.nextval, 'Urocultura', '26-JUN-2018');
+insert into probe(id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba, tip, data_expirare)
+values (99,157,23, '16:30',SQ_PROBE.nextval,  'Coprocultura', NULL);
+insert into probe(id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba, tip, data_expirare)
+values (99,157,23, '16:30', SQ_PROBE.nextval, 'Sange', '27-JUN-2018');
+insert into probe(id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba, tip, data_expirare)
+values (99,157,23, '16:30', SQ_PROBE.nextval, 'Lingual', '27-JUN-2018');
+
+insert into analize (id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba,
+id_tip_analiza, id_examinator, rezultat)
+values (85,145,11, '19:23', 100, 4, 140, '4');
+insert into analize (id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba,
+id_tip_analiza, id_examinator, rezultat)
+values(85,145,11, '19:23', 100, 21, 140, '40');
+insert into analize (id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba,
+id_tip_analiza, id_examinator, rezultat)
+values(85,145,11, '19:23', 100, 23, 140, '100');
+insert into analize (id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba,
+id_tip_analiza, id_examinator, rezultat)
+values (85,145,11, '19:23', 101, 3, 143, '400');
+insert into analize (id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba,
+id_tip_analiza, id_examinator, rezultat)
+values(85,145,11, '19:23', 101, 5, 143, '600');
+insert into analize (id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba,
+id_tip_analiza, id_examinator, rezultat)
+values(85,145,11, '19:23', 101, 6, 143, '1');
+insert into analize (id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba,
+id_tip_analiza, id_examinator, rezultat)
+values(85,145,11, '19:23', 101, 26, 143, 'Pozitiv');
+insert into analize (id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba,
+id_tip_analiza, id_examinator, rezultat)
+values(85,145,11, '19:23', 102, 27, 143, 'Negativ');
+insert into analize (id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba,
+id_tip_analiza, id_examinator, rezultat)
+values(86,158,20, '11:18', 103, 1,  140, '15.3');
+insert into analize (id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba,
+id_tip_analiza, id_examinator, rezultat)
+values(86,158,20, '11:18', 103, 24,  143, '15');
+insert into analize (id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba,
+id_tip_analiza, id_examinator, rezultat)
+values(86,158,20, '11:18', 103, 2,  143, '200');
+insert into analize (id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba,
+id_tip_analiza, id_examinator, rezultat)
+values(86,158,20, '11:18', 103, 6, 140, '0.8');
+insert into analize (id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba,
+id_tip_analiza, id_examinator, rezultat)
+values(86,158,20, '11:18', 104, 22, 140, '10');
+insert into analize (id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba,
+id_tip_analiza, id_examinator, rezultat)
+values(86,158,20, '11:18', 104, 23, 140, '10');
+insert into analize (id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba,
+id_tip_analiza, id_examinator, rezultat)
+values(87, 158, 7, '19:25', 105, 4, 140, '5');
+insert into analize (id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba,
+id_tip_analiza, id_examinator, rezultat)
+values(87, 158, 7, '19:25', 106,  28, 143, 'Negativ');
+insert into analize (id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba,
+id_tip_analiza, id_examinator, rezultat)
+values(87, 158, 7, '19:25',107, 2, 143, '200');
+insert into analize (id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba,
+id_tip_analiza, id_examinator, rezultat)
+values(87, 158, 7, '19:25',107, 1, 143, '20');
+insert into analize (id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba,
+id_tip_analiza, id_examinator, rezultat)
+values(87, 158, 7, '19:25', 108, 30, 140, 'Pozitiv');
+insert into analize (id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba,
+id_tip_analiza, id_examinator, rezultat)
+values(95,154,5, '12:49', 109, 23, 140, '100');
+insert into analize (id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba,
+id_tip_analiza, id_examinator, rezultat)
+values(95,154,5, '12:49', 110,  29, 143, 'Negativ');
+insert into analize (id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba,
+id_tip_analiza, id_examinator, rezultat)
+values(99,157,23, '16:30',111, 21, 140, '100');
+insert into analize (id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba,
+id_tip_analiza, id_examinator, rezultat)
+values(99,157,23, '16:30',112,  27, 143, 'Negativ');
+insert into analize (id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba,
+id_tip_analiza, id_examinator, rezultat)
+values(99,157,23, '16:30', 113, 6, 143, '1.8');
+insert into analize (id_programare, id_receptionist, id_pacient, ora_incepere_reala, id_proba,
+id_tip_analiza, id_examinator, rezultat)
+values(99,157,23, '16:30', 114, 30, 140, 'Negativ');
+
+insert into internari
+values (10, '18-May-2016', '20-May-2016', NULL, 127, 1);
+insert into internari
+values(3, '20-JUN-2018', '30-JUN-2018', 'Recuperare', 166, 2);
+insert into internari
+values(2, '21-DEC-2018', '15-JAN-2019', 'Recuperare', 133, 1);
+insert into internari
+values(10, '18-Mar-2020', '19-Mar-2020', 'Deshidratare', 19, 5);
+insert into internari
+values(15, '21-MAY-2021', NULL, NULL, 127, 1);
+insert into internari
+values(10, '10-APR-2019', '15-APR-2019', NULL, 46, 3);
+insert into internari
+values(1, '1-FEB-2018', '14-FEB-2018', NULL, 166, 2);
+insert into internari
+values(3, '19-may-2021', NULL, 'Recuperare', 46, 3);
+insert into internari
+values(8, '30-AUG-2017', '3-SEP-2017',NULL, 130, 1);
+insert into internari
+values(17, '15-apr-2018', '16-apr-2018', 'Deshidratare', 130, 1);
+insert into internari
+values(10, '10-MAY-2021', null, 'Recuperare', 19, 5);
+insert into internari
+values(12, '11-SEP-2019', '13-SEP-2019', 'Recuperare', 136, 1);
+insert into internari
+values(3, '5-SEP-2019', '10-SEP-2019', 'Accident', 133, 1);
+insert into internari
+values(25, '5-SEP-2019', '10-SEP-2019', 'Accident', 136, 1);
+insert into internari
+values(13, '18-MAY-2021', NULL, 'Accident', 19, 5);
+insert into internari
+values(20,  '21-DEC-2018', '15-JAN-2019', 'Recuperare', 46, 3);
+insert into internari
+values(17, '15-MAY-2018', '20-MAY-2018', NULL, 166, 2);
+
+insert into istoric_slujbe
+values ('ASIS', 162, '30-Dec-2011', '15-MAY-2016', 18000);
+insert into istoric_slujbe
+values('ASIS', 171, '25-Feb-2017', NULL, NULL);
+insert into istoric_slujbe
+values('DOCF', 166, '14-aug-2015', '30-jan-2020', 40000);
+insert into istoric_slujbe
+values('TEHM', 164, '30-jan-2018', '20-aug-2020', 30000);
+insert into istoric_slujbe
+values('BLAB', 164, '21-aug-2020', '01-feb-2021', 30000);
+insert into istoric_slujbe
+values('DOCF', 164, '2-FEB-2021', NULL, NULL);
+insert into istoric_slujbe
+values('ORT', 142,'01-AUG-15', NULL, NULL);
+insert into istoric_slujbe
+values('EXM',143,'10-JAN-12', NULL, NULL);
+insert into istoric_slujbe
+values('DOCF', 149, '19-AUG-12', NULL, NULL);
+insert into istoric_slujbe
+values('CHR', 151, '11-MAR-11', NULL, NULL);
+insert into istoric_slujbe
+values('DRS', 159, '08-OCT-14', NULL, NULL);
+insert into istoric_slujbe
+values('HRREC', 146, '02-MAR-14', '10-MAY-2018', 9900);
+insert into istoric_slujbe
+values('DIRG', 146, '10-MAY-2018', '13-MAY-2018', 200000);
+insert into istoric_slujbe
+values('HRDIR', 146, '14-MAY-2018', NULL, NULL);
+insert into istoric_slujbe
+values('BLAB', 140, '02-FEB-2014', NULL, NULL);
+insert into istoric_slujbe
+values('POR', 139, '23-OCT-2018', NULL, NULL);
+insert into istoric_slujbe
+values('REC', 144, '3-JUL-2017', NULL, NULL);
+
+insert into personal_procedura(id_receptionist, id_pacient, id_programare, ora_incepere_reala, id_personal, rol) values
+(152,20,73, '12:45',162, null);
+insert into personal_procedura(id_receptionist, id_pacient, id_programare, ora_incepere_reala, id_personal, rol) values
+(157, 25, 74, '18:30',167, NULL);
+insert into personal_procedura(id_receptionist, id_pacient, id_programare, ora_incepere_reala, id_personal, rol) values
+(144, 17, 77, '12:00', 160, 'Sef operatie');
+insert into personal_procedura(id_receptionist, id_pacient, id_programare, ora_incepere_reala, id_personal, rol) values
+(144, 17, 77, '12:00', 149, 'Asistent');
+insert into personal_procedura(id_receptionist, id_pacient, id_programare, ora_incepere_reala, id_personal, rol) values
+(144, 17, 77, '12:00', 169, 'Asistent');
+insert into personal_procedura(id_receptionist, id_pacient, id_programare, ora_incepere_reala, id_personal, rol) values
+(157, 20, 79, '15:35', 161, 'Sef operatie');
+insert into personal_procedura(id_receptionist, id_pacient, id_programare, ora_incepere_reala, id_personal, rol) values
+(157, 20, 79, '15:35', 169, 'Asistent');
+insert into personal_procedura(id_receptionist, id_pacient, id_programare, ora_incepere_reala, id_personal, rol) values
+(158, 21,82,'7:25', 165, null);
+insert into personal_procedura(id_receptionist, id_pacient, id_programare, ora_incepere_reala, id_personal, rol) values
+(145,11,85,'19:23', 170, null);
+insert into personal_procedura(id_receptionist, id_pacient, id_programare, ora_incepere_reala, id_personal, rol) values
+(158,20,86,'11:18', 170, null);
+insert into personal_procedura(id_receptionist, id_pacient, id_programare, ora_incepere_reala, id_personal, rol) values
+(158,7,87,'19:25', 171, null);
+insert into personal_procedura(id_receptionist, id_pacient, id_programare, ora_incepere_reala, id_personal, rol) values
+(156,19,88,'16:33',166, null);
+insert into personal_procedura(id_receptionist, id_pacient, id_programare, ora_incepere_reala, id_personal, rol) values
+(155,4,89, '13:48', 164, 'Principal');
+insert into personal_procedura(id_receptionist, id_pacient, id_programare, ora_incepere_reala, id_personal, rol) values
+(155,4,89,'13:48', 171, 'Asistent');
+insert into personal_procedura(id_receptionist, id_pacient, id_programare, ora_incepere_reala, id_personal, rol) values
+(145,3,90,'17:15', 167, NULL);
+insert into personal_procedura(id_receptionist, id_pacient, id_programare, ora_incepere_reala, id_personal, rol) values
+(157,3,91,'16:50', 161, 'Sef operatie');
+insert into personal_procedura(id_receptionist, id_pacient, id_programare, ora_incepere_reala, id_personal, rol) values
+(157,3,91,'16:50',169, 'Asistent');
+insert into personal_procedura(id_receptionist, id_pacient, id_programare, ora_incepere_reala, id_personal, rol) values
+(157,3,91,'16:50',162, 'Anestezist');
+insert into personal_procedura(id_receptionist, id_pacient, id_programare, ora_incepere_reala, id_personal, rol) values
+(157,2,92,'7:39', 168, NULL);
+insert into personal_procedura(id_receptionist, id_pacient, id_programare, ora_incepere_reala, id_personal, rol) values
+(155,18,93,'12:20',165, NULL);
+insert into personal_procedura(id_receptionist, id_pacient, id_programare, ora_incepere_reala, id_personal, rol) values
+(154,23,94,'10:04', 161, 'Sef operatie');
+insert into personal_procedura(id_receptionist, id_pacient, id_programare, ora_incepere_reala, id_personal, rol) values
+(154,23,94,'10:04',162, 'Anestezist');
+insert into personal_procedura(id_receptionist, id_pacient, id_programare, ora_incepere_reala, id_personal, rol) values
+(154,23,94,'10:04', 163, 'Asistent');
+insert into personal_procedura(id_receptionist, id_pacient, id_programare, ora_incepere_reala, id_personal, rol) values
+(154,5,95,'12:49',170,null);
+insert into personal_procedura(id_receptionist, id_pacient, id_programare, ora_incepere_reala, id_personal, rol) values
+(145,23,96,'16:30',165, null);
+insert into personal_procedura(id_receptionist, id_pacient, id_programare, ora_incepere_reala, id_personal, rol) values
+(145,2,97,'12:25', 165, null);
+insert into personal_procedura(id_receptionist, id_pacient, id_programare, ora_incepere_reala, id_personal, rol) values
+(155,8,98,'12:55',160, 'Sef operatie');
+insert into personal_procedura(id_receptionist, id_pacient, id_programare, ora_incepere_reala, id_personal, rol) values
+(155,8,98,'12:55',149, 'Asistent');
+insert into personal_procedura(id_receptionist, id_pacient, id_programare, ora_incepere_reala, id_personal, rol) values
+(155,8,98,'12:55',166, 'Asistent');
+insert into personal_procedura(id_receptionist, id_pacient, id_programare, ora_incepere_reala, id_personal, rol) values
+(157,23,99,'16:30',170, NULL);
+

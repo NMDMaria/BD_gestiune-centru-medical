@@ -1,0 +1,165 @@
+﻿-- Negruț Maria-Daniela, grupa 133, Gestiunea unui centru medical
+--11.Cereri SQL. 1. Stabiliți numele de familie, prenumele și slujba angajaților care au analizat cele mai multe probe de laborator de un anumit tip și câte din numărul total de probe de acel tip a fost făcute de angajat, ordonate lexicografic în funcție de tipul probei.
+
+with ang_probe AS (select ang.id_angajat, p.tip, count(a.rezultat) cate
+                   from angajati ang, probe p, analize a
+                   where p.id_proba = a.id_proba and ang.id_angajat = a.id_examinator
+                   group by ang.id_angajat, p.tip)
+select ang.nume "Nume de familie", ang.prenume "Prenume" , s.nume_slujba "Slujba", ang_probe.tip "Tipul de proba",
+        ang_probe.cate ||'/' || k.maxim "Cate din total"
+from angajati ang, ang_probe, slujbe s,(select p.tip, count(*) maxim 
+                                        from probe p, analize z 
+                                        where p.id_proba = z.id_proba 
+                                        group by p.tip) k
+where     ang.id_angajat = ang_probe.id_angajat 
+      and ang_probe.tip = k.tip
+      and ang.id_slujba = s.id_slujba
+      and (ang_probe.cate, ang_probe.tip) in (select max(ang_probe.cate), ang_probe.tip from ang_probe group by ang_probe.tip)
+order by ang_probe.tip;
+
+--11.Cereri SQL. 2. Care este numele, prenumele, vârsta și genul pacienților ce au avut COVID în trecut, sau care au fost diagnosticați  cu această boală de către un doctor din centru, ce a absolvit Facultatea de Medicină “Carol Davila”, ordonații descrescător în funcție de vârstă.
+select 'A avut/are covid: ' " ",pac.nume, pac.prenume, round((sysdate - pac.data_nasterii)/365) "Varsta", pac.gen
+from pacienti pac
+where exists (select 1 
+              from istoric_afectiuni i, afectiuni a
+              where (i.id_pacient = pac.id_pacient and i.id_afectiune = a.id_afectiune
+                        and lower(a.denumire_afectiune) like '%cov%'))
+    or exists (select 1
+                from diagnostice d, afectiuni a, personal_procedura p, calificari c
+                where d.id_pacient = pac.id_pacient and d.id_afectiune = a.id_afectiune
+                and p.id_programare = d.id_programare and c.id_angajat = p.id_personal
+                                and lower(c.UNITATE_EMITENTA_CERTIFICARE) like '%carol%davila%'
+                                 and lower(a.denumire_afectiune) like '%cov%')
+order by "Varsta" desc;
+
+--11.Cereri SQL.3. Care este numele, prenumele, slujba, orașul și vârsta angajaților care au participat la o operație ordonați de la cei mai tineri la cei mai înaintați în vârstă. Spuneți și care a fost data, ora și tipul operației, cât și ce rol a avut angajatul.
+
+select s.nume_slujba "Slujba", ang.nume, ang.prenume, round((sysdate - ang.data_nasterii)/365) "Varsta",
+       sd.denumire_sediu "Sediu" , sd.oras, prog.data, proced.ora_incepere_reala "Ora operatiei" ,k.rol, op.denumire "Numele operatiei"
+from slujbe s, angajati ang, sedii sd, personal_procedura k, proceduri_medicale proced, programari prog, tipuri_operatie op
+where   s.id_slujba = ang.id_slujba
+    and sd.id_sediu = ang.id_sediu
+    and k.id_personal = ang.id_angajat
+    and k.id_programare = prog.id_programare
+    and k.id_programare = proced.id_programare
+    and initcap(proced.proceduri_medicale_type) = initcap('operatie')
+    and proced.operatie_id_tip_operatie = op.id_tip_operatie
+order by "Varsta" ;
+
+--11.Cereri SQL. 4. Se cer informații despre pacienții centrului: numele, prenumele, dacă au asigurare de sănătate codul CID, altfel să se specifice că nu au, ordonați crescător în funcție de numele de familie. Cât și programările făcute de aceștia - dacă au fost respectate sau nu, iar dacă da care a fost procedura făcută, în cazul consultațiilor precizându-se și dacă au fost date trimiteri și/sau tratamente.
+
+select pac.nume, pac.prenume, NVL(to_char(pac.cid), 'Nu este asigurat') "Asigurare", detalii.*
+from pacienti pac, (select distinct p.id_pacient, pg.id_programare "Id programare", 
+                            DECODE (pg.status, 'Implinita', 'Respectat'
+                                            , 'Absenta', 'Nerespectat'
+                                            , 'Anulata', 'Nerespectat') "Status",
+                            CASE WHEN (pg.status != 'Implinita') then null
+                                 WHEN (pr.proceduri_medicale_type = 'Consult'   and exists (select 1 
+                                                                                from tratamente t, trimiteri ti
+                                                                                where t.id_programare = pr.id_programare
+                                                                                        and ti.id_programare = pr.id_programare)) 
+                                        then 'Consult cu tratament si trimitere'
+                                 WHEN (pr.proceduri_medicale_type = 'Consult'   and exists (select 1 
+                                                                                from tratamente t 
+                                                                                where t.id_programare = pr.id_programare)) 
+                                        then 'Consult cu tratament'
+                                 WHEN (pr.proceduri_medicale_type = 'Consult'   and exists (select 1 
+                                                                                from trimiteri t 
+                                                                                where t.id_programare = pr.id_programare)) 
+                                        then 'Consult cu trimitere'
+                                 WHEN (pr.proceduri_medicale_type = 'Consult') then 'Consult fara recomandari'
+                                 else pr.proceduri_medicale_type
+                                END "Tipul procedurii daca exista"
+                        from pacienti p, programari pg, proceduri_medicale pr
+                        where (pg.id_pacient = p.id_pacient 
+                              and pr.id_programare = pg.id_programare)
+                              or (pg.id_pacient = p.id_pacient and initcap(pg.status) != 'Implinita'))      detalii
+where detalii.id_pacient = pac.id_pacient
+order by pac.nume;
+
+--11.Cereri SQL.5. Care sunt sediile care au peste 3 angajați ce lucrează într-un departament ce are manager și care lucrează în București, într-un sediu unde a avut loc cel puțin o internare în lunile martie, mai sau decembrie, sau unde un pacient a fost internat cel puțin 5 zile.
+
+select a.id_sediu, count(*) "Nr angajati"
+from angajati a
+where a.id_departament in (select id_departament
+                          from departamente where id_manager is not null)
+    and a.id_sediu in (select id_sediu
+                    from sedii, pacienti pac, internari i
+                    where sedii.oras = 'Bucuresti'
+                    and pac.id_pacient = i.id_pacient
+                    and i.camera_id_sediu = sedii.id_sediu
+                    and (to_char(i.data_inceput, 'MM') in (3, 5, 12) or round(MONTHS_BETWEEN(i.data_sfarsit, i.data_inceput)*31) >= 5))
+group by a.id_sediu
+having count(*) > 3
+order by 2;
+
+--12. Actualizare si suprimare. 1.  Actualizarea bonusului angajaților din sediul 1 cu bonusul actual la car se adaugă valoarea bonusului maxim al angajaților din sediul 2.
+UPDATE angajati a
+SET a.bonus = nvl(a.bonus, 0) + (select max(a1.bonus)
+                        from angajati a1
+                        where a1.id_sediu = 2)
+where a.id_sediu = 1;
+
+--12. Actualizare si suprimare. 2.  Suprimarea calificărilor angajaților care sunt de tipul personal medical și au fost angajați între 2017 și 2019 inclusiv.
+delete from calificari
+where id_certificare in (select c.id_certificare
+                        from calificari c, angajati a
+                        where c.id_angajat = a.id_angajat and lower(a.angajat_type) like '%medical%'
+                        and to_char(a.data_angajarii, 'YYYY') >= 2017 and  to_char(a.data_angajarii, 'YYYY') <= 2019);
+
+--12. Actualizare si suprimare.3. Modificați salariul și bonusul angajaților cu slujba de doctori de familie cu id-ul ‘DOCF’ în 1.5 * salariului minim și bonusul maxim corespunzătoare slujbei, dacă salariul respectivului salariat este mai mic față de noul salariu pe care vrem să îl atribuim.
+update angajati
+set (angajati.salariu, angajati.bonus) = (select salariu_minim * 1.5, bonus_maxim
+                                          from slujbe
+                                          where id_slujba = angajati.id_slujba)
+where lower(angajati.id_slujba) like '%docf%' and angajati.salariu < (select salariu_minim * 1.5
+                                                                      from slujbe
+                                                                      where id_slujba = angajati.id_slujba);
+
+--13.Secvente
+CREATE SEQUENCE  "SQ_ANG"  MINVALUE 1 MAXVALUE 99999 INCREMENT BY 1 START WITH 139 NOCACHE  NOORDER  NOCYCLE;
+CREATE SEQUENCE  "SQ_CAMERE"  MINVALUE 1 MAXVALUE 200 INCREMENT BY 3 START WITH 100 NOORDER  CYCLE ;
+CREATE SEQUENCE  "SQ_DEPT"  MINVALUE 1 MAXVALUE 99999 INCREMENT BY 3 START WITH 1 NOORDER  NOCYCLE ;
+ CREATE SEQUENCE  "SQ_PROBE"  MINVALUE 1 MAXVALUE 500 INCREMENT BY 1 START WITH 100 NOORDER  NOCYCLE ;
+ CREATE SEQUENCE  "SQ_PROG"  MINVALUE 1 MAXVALUE 99999 INCREMENT BY 1 START WITH 72 NOORDER  NOCYCLE ;
+CREATE SEQUENCE  "SQ_SEDII"  MINVALUE 1 MAXVALUE 99999 INCREMENT BY 1 START WITH 1 NOCACHE  NOORDER  NOCYCLE ;
+CREATE SEQUENCE  "SQ_TIP_OP"  MINVALUE 1 MAXVALUE 99999 INCREMENT BY 1 START WITH 1 NOORDER  NOCYCLE ;
+--Exemple de folosire a acestora în inserarea de date:
+insert into SEDII (id_sediu, denumire_sediu, judet, localitate, oras, strada, numar) values (sq_sedii.nextval, 'Spital', 'Bucuresti', 'Bucuresti', 'Bucuresti', 'Unirii', 3);
+insert into camere (nr_camera, id_sediu, tip) values (SQ_CAMERE.nextval, 1, 'Receptie');
+insert into tipuri_operatie (id_tip_operatie, denumire, risc) values (SQ_TIP_OP.nextval, 'Nastere prin cezariana', 'scazut');
+insert into DEPARTAMENTE(id_departament, nume_departament, id_manager) values (SQ_DEPT.nextval, 'HR', 146);
+insert into angajati (id_angajat, nume, prenume, email, data_nasterii, data_angajarii, nr_telefon, id_slujba, id_sediu, CNP, salariu, bonus, angajat_type, id_departament, id_sef, domeniu, cabinet_nr_camera, cabinet_id_sediu)
+values (sq_ang.nextval, 'Jarnell', 'Michel', 'mjarnell0@opera.com', '18-Oct-1975','23-Oct-2018', '2315902359', 'POR', 1, '9264766553',7665,0.15,'Normal', 7, NULL, NULL, null, null);
+
+--16.Cerere outer-join și cereri cu DIVISION.1. Cerere folosind outer-join pe minim 4 tabele: Selectați id-ul, nume și prenumele pacienților. Pentru fiecare afișați ora și data programărilor, dacă sunt. Afișați cât și tipul procedurii executate dacă a fost cazul, denumirea afecțiunii dacă au fost date diagnostice, observațiile diagnosticelor, iar dacă au fost operații afișați denumirea acesteia, care a fost gradul de risc și eventuale observații.
+
+select distinct pac.id_pacient, pac.nume, pac.prenume, prg.data, prg.ora, pr.ORA_INCEPERE_REALA "Ora procedurii", pr.PROCEDURI_MEDICALE_TYPE "Tip procedura",
+        af.denumire_afectiune, d.OBSERVATII, op.denumire, op.risc, pr.OPERATIE_OBSERVATII
+from pacienti pac, programari prg, proceduri_medicale pr, diagnostice d, afectiuni af, tipuri_operatie op
+where pac.id_pacient = prg.id_pacient(+)
+    and prg.id_programare = pr.id_programare(+)
+    and d.id_programare(+) = pr.id_programare
+    and af.id_afectiune(+) = d.id_afectiune
+    and op.id_tip_operatie(+) = pr.operatie_id_tip_operatie
+order by 1;
+--16.Cerere outer-join și cereri cu DIVISION2. Cerere folosind DIVISION: Selectați informații (id, nume, prenume, salariu, denumire slujbă, orașul unde lucrează) despre angajații care au lucrat la analiza tuturor probelor de tip ‘Urocultură’.
+SELECT DISTINCT a.ID_EXAMINATOR, ang.nume, ang.prenume, ang.salariu, s.nume_slujba, loc.oras
+FROM analize a, angajati ang, slujbe s, sedii loc
+WHERE NOT EXISTS
+        (SELECT 1 
+        FROM probe p 
+        WHERE lower(p.tip) = lower('Urocultura')
+        AND NOT EXISTS
+        (SELECT 1
+        FROM analize b
+        WHERE p.id_proba =b.id_proba
+        AND b.ID_EXAMINATOR =a.ID_EXAMINATOR)) and ang.id_angajat = a.ID_EXAMINATOR and ang.id_slujba = s.id_slujba and loc.id_sediu = ang.id_sediu;
+--16.Cerere outer-join și cereri cu DIVISION3. Cerere utilizând DIVISION: Selectați informații despre pacienții (id, nume, prenume, data nașterii) care s-au prezentat la toate programările făcute.
+SELECT p.id_pacient, pac.nume, pac.prenume, pac.data_nasterii
+FROM programari p, pacienti pac
+WHERE p.id_programare
+IN(SELECT id_programare FROM programari WHERE lower(p.status) = lower('implinita')) and pac.id_pacient = p.id_pacient
+GROUP BY p.id_pacient,pac.nume, pac.prenume, pac.data_nasterii
+HAVING COUNT(p.id_programare) in (SELECT COUNT(*)FROM programari WHERE lower(status) = lower('implinita') and id_pacient = p.id_pacient);
+
